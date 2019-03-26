@@ -1,182 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>{{title}}</title>
-    <meta name="keywords" content="pxls, pixels, place, art">
-    <meta name="description" content="Place pixels with people to create art">
-    <meta name="google-play-app" content="app-id=space.pxls.android">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="/favicon.ico" type="image/x-icon">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.8/interact.min.js"></script>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
-
-    {{head}}
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="js/vend/es5-shim.min.js"></script>
+    <script src="js/vend/es6-shim.min.js"></script>
+    <script src="js/vend/crel.min.js"></script>
+    <script src="js/vend/jquery-3.3.1.min.js"></script>
+    <script src="js/vend/hotkeys.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.1.1/handlebars.min.js"></script>
+    <link rel="stylesheet" href="css/normalize.css">
+    <link rel="stylesheet" href="//use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Pxls.space</title>
 </head>
-<body class="show-placeable-bubble">
-
-<div id="reconnecting">Lost connection to server, reconnecting...</div>
-
-<div id="board-container" style="touch-action: none">
-    <div id="grid"></div>
-    <div id="board-zoomer">
-        <div id="board-mover">
-            <canvas id="heatmap" class="pixelate noselect"></canvas>
-            <canvas id="virginmap" class="pixelate noselect"></canvas>
-            <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
-        </div>
-    </div>
-</div>
-
-<div id="drawers">
-    <div id="info" class="drawer">
-        <div class="drawer-content">
-            <div class="close">Close</div>
-            {{info}}
-        </div>
-        <div class="open">info</div>
-    </div>
-
-    <div id="template-control" class="drawer">
-        <div class="drawer-content">
-            <div class="close">Close</div>
-            <div>
-                <h1>General settings</h1>
-                <div class="settingToggles">
-                    <label><input id="audiotoggle" type="checkbox"/>Mute sound</label>
-                    <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap (toggle with <kbd>H</kbd>)</label>
-                    <label><input id="virginmaptoggle" type="checkbox"/>Turn on virginmap (toggle with <kbd>X</kbd>)</label>
-                    <button id="hvmapClear">Clear heatmap and virginmap</button> (hotkey: <kbd>O</kbd>)
-                    <label><input id="gridtoggle" type="checkbox"/>Turn on grid (toggle with <kbd>G</kbd>)</label>
-                    <label><input id="stickyColorToggle" type="checkbox"/>Keep color selected</label>
-                    <label><input id="monospaceToggle" type="checkbox"/>Toggle monospace font for lookups</label>
-                    <label><input id="increasedZoomToggle" type="checkbox"/>Allow zoom values greater than 50x</label>
-                    <label><input id="scrollSwitchToggle" type="checkbox"/>Enable scrolling on the palette to switch colors</label>
-                    <label style="text-indent:1em"><input id="scrollDirectionToggle" type="checkbox"/>Invert scroll direction</label>
-                    <label><input id="cbEnableMiddleMouseSelect" type="checkbox"> Enable middle mouse button selecting color from board</label>
-                    <label>Heatmap BG Opacity: <input type="range" min="0" max="1" step="0.01" id="heatmap-opacity"></label>
-                    <label>Virginmap BG Opacity: <input type="range" min="0" max="1" step="0.01" id="virginmap-opacity"></label>
-                    <label>
-                        Snapshot (hotkey: <kbd>P</kbd>) image format
-                        <select id="snapshotImageFormat">
-                            <option value="image/png" selected>PNG</option>
-                            <option value="image/jpeg">JPEG</option>
-                            <option value="image/webp">WEBP (Chrome only)</option>
-                        </select>
-                    </label>
+    <body>
+        <header>
+            <div class="left">
+                <span class="panel-trigger" data-panel="info"><i class="fas fa-info-circle"></i></span>
+            </div>
+            <div class="mid">
+                <div id="userinfo">
+                    <span class="userinfo-name not-authed text-muted">Not Logged In</span>
                 </div>
             </div>
-            <div>
-                <h1>Keyboard controls</h1>
-                <h3>General</h3>
-                <div class="indent-1">
-                    <p>Mouse/arrows/wasd to pan</p>
-                    <p>Scroll/pinch to zoom</p>
-                    <p><kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom</p>
-                    <p><kbd>Shift</kbd> + Click/Hold touch to lookup pixel</p>
-                    <p><kbd>G</kbd> to toggle grid</p>
-                    <p><kbd>I</kbd> to toggle info</p>
-                    <p><kbd>T</kbd> to open/close settings</p>
-                    <p><kbd>L</kbd> to toggle locking panning of the canvas</p>
-                    <p><kbd>P</kbd> to take a snapshot</p>
-                    <p><kbd>H</kbd> to toggle heatmap</p>
-                    <p><kbd>X</kbd> to toggle virginmap</p>
-                    <p><kbd>O</kbd> to clear heatmap and virginmap (if either is enabled)</p>
-                    <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
-                    <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
-                    <p><kbd>ESC</kbd> to deselect current pixel</p>
-					<p><kbd>R</kbd> to center the board on the current template</p>
-                </div>
-                <h3>Template</h3>
-                <div class="indent-1">
-                    <p><kbd>Page Up</kbd> to increase opacity</p>
-                    <p><kbd>Page Down</kbd> to decrease opacity</p>
-                    <p><kbd>V</kbd> to toggle visibility</p>
+            <div class="right">
+                <span class="panel-trigger" data-panel="keybinds"><i class="fas fa-keyboard"></i></span>
+                <span class="panel-trigger" data-panel="settings"><i class="fas fa-cog"></i></span>
+            </div>
+        </header>
+
+        <!-- MAIN -->
+
+        <main>
+            <div id="gameWrapper">
+                <div id="zoom">
+                    <div id="pan">
+                        <canvas id="mainCanvas"></canvas>
+                    </div>
                 </div>
             </div>
-            <div>
-                <h1>Template control</h1>
-                <p>Hold down <kbd>Ctrl</kbd> to drag the template around</p>
-                <p><label>Use template: <input type="checkbox" id="template-use"></label></p>
-                <p><label>URL: <input type="text" id="template-url"></label></p>
-                <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" id="template-opacity"></label></p>
-            </div>
-            <div>
-                <h1>Pixel Ready alert settings</h1>
-                <p class="alertLocationWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
-                <div class="ButtonBar">
-                    <button id="btnForceAudioUpdate" class="button">Update</button>
-                    <button id="btnAlertAudioTest" class="button">Test</button>
-                    <button id="btnAlertReset" class="button">Reset</button>
+        </main>
+
+        <!-- PANELS -->
+
+        <aside class="panel left" data-panel="info">
+            <header class="panel-header darker">
+                <div class="left"></div>
+                <div class="mid">
+                    <h2><i class="fas fa-info-circle fa-is-left fa-1_5x"></i>Info</h2>
                 </div>
-                <div>
-                    <label for="rangeAlertVolume">Volume:</label>
-                    <input type="range" id="rangeAlertVolume" min=0 max=1 step=".01" value=1>
-                    <span id="lblAlertVolume"></span>
+                <div class="right">
+                    <i class="fas fa-times panel-closer text-red"></i>
                 </div>
-				<label style="display: block;">Delay (Seconds): <input width="30px" value="0" id="alertDelay"></label>
+            </header>
+            <div class="panel-body">
+                <div id="info-target">Loading...</div>
             </div>
-        </div>
-        <div class="open">settings</div>
-    </div>
-
-    <div id="drawers-opener">
-        <div id="drawers-opener-content">
-            
-        </div>
-        <div class="open"></div>
-    </div>
-</div>
-
-<div id="ui">
-    <div class="ui-bar">
-        <div id="undo"><span>Undo</span></div>
-        <div id="login-overlay" class="palette-overlay">
-            You are not signed in. <a href="#">Sign in with...</a>
-        </div>
-        <div id="user-message" class="palette-overlay"></div>
-        <div id="palette">
-            <div id="cd-timer-overlay" class="palette-overlay"></div>
-        </div>
-    </div>
-
-    <div class="left">
-        <div id="coords" class="bubble"><img src="lock.png" class="icon-lock" style="display: none;"> <span class="coords-text"></span></div>
-        <div id="heatmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading heatmap...</div>
-        <div id="virginmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading virginmap...</div>
-        <div id="cd-timer-bubble" class="bubble"></div>
-        <div id="placeableInfoBubble" class="bubble">Pixels available: <span id="placeableCount-bubble">0/0</span></div>
-    </div>
-    <div class="right">
-        <div id="userinfo" class="bubble"><span class="name"></span> <a href="/logout" class="logout">logout</a></div>
-        <div id="online" class="bubble"></div>
-    </div>
-</div>
-
-<div id="lookup"></div>
-<div id="loading"><span>Loading...</span></div>
-<div id="cursor">
-    <div id="placeableCount-cursor">0/0</div>
-</div>
-<div id="reticule"></div>
-<div id="prompt" class="message"></div>
-<div id="signup" class="message">
-    <h1>Sign up</h1>
-    <h4>Pick a username</h4>
-
-    <input class="" type="text" maxlength="32">
-    <div class="error" id="error"></div>
-    <span class="button" id="signup-button">Sign up</span>
-</div>
-<div id="alert" class="message" ><span class="text"></span><div class="custWrapper"></div> <span class="button">OK</span></div>
-
-
-<div class="g-recaptcha"
-     data-callback="recaptchaCallback"
-     data-size="invisible"></div>
-
-<script src="pxls.js"></script>
-
-</body>
+        </aside>
+        <aside class="panel right" data-panel="settings">
+            <header class="panel-header">
+                <div class="left">
+                    <i class="fas fa-times panel-closer text-red"></i>
+                </div>
+                <div class="mid">
+                    <h2><i class="fas fa-cogs fa-is-left fa-1_5x"></i>Settings</h2>
+                </div>
+                <div class="right"></div>
+            </header>
+        </aside>
+        <aside class="panel right" data-panel="keybinds">
+            <header class="panel-header">
+                <div class="left">
+                    <i class="fas fa-times panel-closer text-red"></i>
+                </div>
+                <div class="mid">
+                    <h2><i class="fas fa-keyboard fa-is-left fa-1_5x"></i>Keybinds</h2>
+                </div>
+                <div class="right"></div>
+            </header>
+        </aside>
+        <script src="js/pxls.js"></script>
+    </body>
 </html>

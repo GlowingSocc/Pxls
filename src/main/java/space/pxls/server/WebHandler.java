@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
@@ -72,6 +73,31 @@ public class WebHandler {
             return "";
         }
     }
+
+    public void rootHandler(HttpServerExchange exchange) {
+        try {
+            System.out.printf("%nURI: %s%nPath: %s%nURL: %s%n", exchange.getRequestURI(), exchange.getRequestPath(), exchange.getRequestURL());
+            File directFile = Paths.get("./resources/public/", exchange.getRequestURI()).toFile();
+            File cachedFile = Paths.get("./cache/", exchange.getRequestURI()).toFile();
+            //handleFile(exchange, directFile, cachedFile.exists());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        exchange.endExchange();
+    }
+
+    private void handleFile(HttpServerExchange exchange, File directFile, File cachedFile) {
+        handleFile(exchange, directFile, cachedFile, false);
+    }
+    private void handleFile(HttpServerExchange exchange, File directFile, File cachedFile, boolean skipCache) {
+        String toServe = "ERR_UNKNOWN_ERROR";
+
+        //
+
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+        exchange.getResponseSender().send(toServe);
+    }
+
     public void index(HttpServerExchange exchange) {
         File index_cache = new File(App.getStorageDir().resolve("index_cache.html").toString());
         if (index_cache.exists()) {

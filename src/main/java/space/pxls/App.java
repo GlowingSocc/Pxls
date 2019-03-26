@@ -53,77 +53,84 @@ public class App {
     private static UndertowServer server;
 
     private static String cachedWhoamiOrigin = null;
+    private static String cachedWebRoot = null;
+
     public static void main(String[] args) {
-        gson = new Gson();
-
-        loadConfig();
-
-        pixelLogger = LogManager.getLogger("Pixels");
-
-        width = config.getInt("board.width");
-        height = config.getInt("board.height");
-        board = new byte[width * height];
-        heatmap = new byte[width * height];
-        placemap = new byte[width * height];
-        virginmap = new byte[width * height];
-
-        if (!loadMap()) {
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    board[x + width * y] = getDefaultColor(x, y);
-                }
-            }
-        }
-
-        loadHeatmap();
-        loadPlacemap();
-        loadVirginmap();
-
-        database = new Database();
-        userManager = new UserManager();
-
-        new Thread(() -> {
-            Scanner s = new Scanner(System.in);
-            while (true) {
-                handleCommand(s.nextLine());
-            }
-        }).start();
-
-        new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
-
-        new Timer().schedule(new DatabaseTimer(), 0, 1000 * 60 * 2);
-
-        int heatmap_timer_cd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
-        new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            saveMapBackup();
-            saveMapForce();
-        }));
-
-        server = new UndertowServer(config.getInt("server.port"));
-        server.start();
-
-        new Timer().schedule(new TimerTask(){
-            @Override
-            public void run() {
-                tickStackedPixels();
-            }
-        }, 0, 5000);
-
         try {
-            Path backupsDir = getStorageDir().resolve("backups/");
-            if (!Files.exists(backupsDir)) {
-                if (!backupsDir.toFile().mkdirs()) {
-                    System.err.println("Failed to make backup dirs");
-                } else {
-                    System.out.printf("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize());
+            gson = new Gson();
+
+            loadConfig();
+
+            pixelLogger = LogManager.getLogger("Pixels");
+
+            width = config.getInt("board.width");
+            height = config.getInt("board.height");
+            board = new byte[width * height];
+            heatmap = new byte[width * height];
+            placemap = new byte[width * height];
+            virginmap = new byte[width * height];
+
+            if (!loadMap()) {
+                for (int x = 0; x < width; x++) {
+                    for (int y = 0; y < height; y++) {
+                        board[x + width * y] = getDefaultColor(x, y);
+                    }
                 }
             }
+
+            loadHeatmap();
+            loadPlacemap();
+            loadVirginmap();
+
+            database = new Database();
+            userManager = new UserManager();
+
+            new Thread(() -> {
+                Scanner s = new Scanner(System.in);
+                while (true) {
+                    handleCommand(s.nextLine());
+                }
+            }).start();
+
+            new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
+
+            new Timer().schedule(new DatabaseTimer(), 0, 1000 * 60 * 2);
+
+            int heatmap_timer_cd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
+            new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
+
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                saveMapBackup();
+                saveMapForce();
+            }));
+
+            server = new UndertowServer(config.getInt("server.port"));
+            server.start();
+
+            new Timer().schedule(new TimerTask(){
+                @Override
+                public void run() {
+                    tickStackedPixels();
+                }
+            }, 0, 5000);
+
+            try {
+                Path backupsDir = getStorageDir().resolve("backups/");
+                if (!Files.exists(backupsDir)) {
+                    if (!backupsDir.toFile().mkdirs()) {
+                        System.err.println("Failed to make backup dirs");
+                    } else {
+                        System.out.printf("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize());
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println(new Error("Failed to create backup directories", e));
+            }
+            saveMap();
         } catch (Exception e) {
-            System.err.println(new Error("Failed to create backup directories", e));
+            e.printStackTrace();
+            System.err.println("Failed to init");
         }
-        saveMap();
     }
 
     private static void handleCommand(String line) {
@@ -131,6 +138,7 @@ public class App {
             String[] token = line.split(" ");
             if (token[0].equalsIgnoreCase("reload")) {
                 cachedWhoamiOrigin = null;
+                cachedWebRoot = null;
                 loadConfig();
             } else if (token[0].equalsIgnoreCase("save")) {
                 saveMapForce();
@@ -361,6 +369,16 @@ public class App {
     public static String getWhoamiAllowedOrigin() {
         if (cachedWhoamiOrigin == null) cachedWhoamiOrigin = config.getString("whoamiAllowedOrigin");
         return cachedWhoamiOrigin;
+    }
+
+    public static String getWebRoot() {
+        return getWebRoot(false);
+    }
+
+    public static String getWebRoot(boolean ignoreCache) {
+        if (ignoreCache) return config.getString("html.webRoot");
+        if (cachedWebRoot == null) cachedWebRoot = config.getString("html.webRoot");
+        return cachedWebRoot;
     }
 
     public static int getPixel(int x, int y) {
