@@ -36,10 +36,17 @@ footer.darker {
     background-image: linear-gradient(to bottom, #bebebe, #8b8b8b);
 }
 
+#mainHeader {
+    z-index: 90;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 0;
+}
+
 header .fas {
     font-size: 2rem;
-    margin-top: .1rem;
-    cursor: pointer;
+    margin-top: .25rem;
 }
 
 header.slim {
@@ -76,7 +83,6 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
 
 main {
     height: calc(100% - 2.55em);
-    margin-top: -1rem;
     padding: 0;
 }
 
@@ -87,7 +93,7 @@ main {
     margin-left: .5rem;
 }
 
-.userinfo-name:not(.not-authed) {
+.userinfo-name {
     text-decoration: underline;
     cursor: pointer;
     user-select: none;
@@ -102,7 +108,7 @@ main {
 }
 
 .fas.fa-is-left {
-    margin-right: .25rem;
+    margin-right: .5rem;
 }
 
 .fas.fa-is-right {
@@ -129,23 +135,61 @@ main {
     color: #a00;
 }
 
+.text-orange {
+    color: #ffa500;
+}
+
 .text-muted {
     color: #8c8c8c;
 }
 
+a:hover {
+    color: #0aa;
+}
+
+.pixelate {
+    /* and actually pixelate them */
+    image-rendering: optimizeSpeed; /* Legal fallback */
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+
+/* STATUS */
+
+.status:not([data-init]) {
+    display: none;
+}
+
+.status {
+    z-index: 98;
+    position: fixed;
+    bottom: 1rem;
+    left: 1rem;
+    padding: 1rem;
+    background-color: #000a;
+    border-radius: .5rem;
+}
+
+
 /* INFO-SPECIFIC */
 
-#info-target article:not(:last-of-type) {
+#info-target section:not(:last-of-type) {
     margin-bottom: 1rem;
 }
 #info-target:first-of-type {
     margin-top: .5rem;
 }
-#info-target article:last-of-type {
+#info-target section:last-of-type {
     margin-bottom: .5rem;
 }
 
-#info-target article {
+#info-target section {
     border: 1px solid #000;
 }
 
@@ -154,14 +198,14 @@ main {
     margin: .5rem 0;
 }
 
-#info-target article h2 {
+#info-target section h2 {
     margin: 0;
     padding: 0;
     text-align: center;
     width:  100%;
 }
 
-#info-target article hr {
+#info-target section hr {
     height: 1px;
     border: none;
     margin: 0;
@@ -176,9 +220,45 @@ main {
     display: block;
 }
 
+
+/* GAME */
+
+#heatmap {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
+#virginmap {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
+#gameWrapper {
+    z-index: 0;
+    position: fixed;
+    /* top: 0; */
+    /* left: 0; */
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#zoom {
+    flex: 0 0 100px;
+}
+
+#mainCanvas {
+    display: block;
+}
+
+
 /* PANELS */
 
-aside.panel {
+.panel {
     position: fixed;
     top: 0;
     max-width: 50%;
@@ -187,6 +267,8 @@ aside.panel {
     max-height: 100%;
     min-height: 100%;
     box-shadow: 0 0 10px 5px #0009;
+    z-index: 99;
+    background-color: #e5e5e5;
 }
 
 .panel header {
@@ -224,6 +306,7 @@ aside.panel {
 
 .panel-trigger {
     color: #000;
+    cursor: pointer;
 }
 
 .panel-trigger:hover {
@@ -233,6 +316,11 @@ aside.panel {
 .panel-trigger:active {
     color: #555;
 }
+
+.panel-closer:not(.not-pointer) {
+    cursor: pointer;
+}
+
 
 /* MODAL */
 
@@ -260,6 +348,7 @@ aside.panel {
     height: 25rem;
     max-height: 100%;
     box-shadow: 0 0 10px 3px #000a;
+    background-color: #e5e5e5;
 }
 
 .modal-header {
@@ -287,9 +376,10 @@ aside.panel {
     margin-left: auto;
 }
 
+
 /* responsive */
 
-@media (max-width: 768px) { /* Phones */
+@media (max-width: 48rem) { /* Phones */
     .panel {
         max-width: 100% !important;
         width: 100% !important;
