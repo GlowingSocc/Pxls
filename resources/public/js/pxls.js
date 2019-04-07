@@ -6,6 +6,7 @@ if (window.App !== undefined) {
 window.App = (function () {
     // first we define the global helperfunctions and figure out what kind of settings our browser needs to use
     let storageFactory = function (storageType, prefix, exdays) {
+            let haveSupport = null;
             const getCookie = function (c_name) {
                     let i, x, y, ARRcookies = document.cookie.split(";");
                     for (i = 0; i < ARRcookies.length; i++) {
@@ -24,42 +25,63 @@ window.App = (function () {
                     c_value += ((exdays === null) ? '' : '; expires=' + exdate.toUTCString());
                     document.cookie = c_name + '=' + c_value;
                 };
-            return {
-                haveSupport: null,
-                support: function () {
-                    if (this.haveSupport === null) {
-                        try {
-                            storageType.setItem('test', '1');
-                            this.haveSupport = (storageType.getItem('test') == '1');
-                            storageType.removeItem('test');
-                        } catch (e) {
-                            this.haveSupport = false;
-                        }
-                    }
-                    return this.haveSupport;
-                },
-                get: function (name) {
-                    let s = this.support() ? storageType.getItem(name) : getCookie(prefix + name);
+            function get(name) {
+                let s = support() ? storageType.getItem(name) : getCookie(prefix + name);
+                try {
+                    return s === undefined ? null : JSON.parse(s);
+                } catch (e) {
+                    return null;
+                }
+            }
+            function set(name, value) {
+                value = JSON.stringify(value);
+                if (support()) {
+                    storageType.setItem(name, value);
+                } else {
+                    setCookie(prefix + name, value, exdays)
+                }
+            }
+            function remove(name) {
+                if (support()) {
+                    storageType.removeItem(name);
+                } else {
+                    setCookie(prefix + name, '', -1);
+                }
+            }
+            function support() {
+                if (haveSupport === null) {
                     try {
-                        return s === undefined ? null : JSON.parse(s);
+                        storageType.setItem('test', '1');
+                        haveSupport = (storageType.getItem('test') == '1');
+                        storageType.removeItem('test');
                     } catch (e) {
-                        return null;
+                        haveSupport = false;
                     }
-                },
-                set: function (name, value) {
-                    value = JSON.stringify(value);
-                    if (this.support()) {
-                        storageType.setItem(name, value);
-                    } else {
-                        setCookie(prefix + name, value, exdays)
+                }
+                return haveSupport;
+            }
+
+            function noop() {}
+
+            return {
+                support,
+                get,
+                set,
+                remove,
+                generateToggleCheckbox: function(inputText, lsOption, options) {
+                    options = Object.assign({defaultState: false, onchange: noop, indent: 0}, options);
+                    let fetched = get(lsOption);
+                    if (fetched == null) {
+                        set(lsOption, options.defaultState);
+                        fetched = options.defaultState;
                     }
-                },
-                remove: function (name) {
-                    if (this.support()) {
-                        storageType.removeItem(name);
-                    } else {
-                        setCookie(prefix + name, '', -1);
-                    }
+                    let input = crel('input', {type: 'checkbox', 'data-option': lsOption});
+                    input.checked = !!fetched;
+                    input.addEventListener('change', function(e) {
+                        set(lsOption, !!this.checked);
+                        if (typeof options.onchange === 'function') options.onchange(e, !!this.checked);
+                    });
+                    return crel('label', {class: 'checkbox-label' + (options.indent > 0 ? ' indented' : ''), style: options.indent > 0 ? `text-indent: ${options.indent}rem` : ''}, input, inputText || '');
                 }
             };
         },
@@ -126,6 +148,7 @@ window.App = (function () {
         ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
         desktop_safari = (nua.match(/safari/i) && !nua.match(/chrome/i)),
         ms_edge = nua.indexOf('Edge') > -1;
+
     if (ios_safari) {
         let iOS = parseFloat(
             ('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ''])[1])
@@ -142,6 +165,7 @@ window.App = (function () {
     if (ms_edge) {
         have_image_rendering = false;
     }
+
     let ls = storageFactory(localStorage, 'ls_', 99),
         ss = storageFactory(sessionStorage, 'ss_', null),
         query = (function () {
@@ -429,7 +453,6 @@ window.App = (function () {
                     } else return self.showText(obj);
                 },
                 _show: (elem, title, buttons) => {
-                    console.log('Building modal for %o and buttons %o', elem, buttons);
                     //build the actual DOM for modal/backdrop
                     let modalBackdrop = crel("div", {"class": "modal-backdrop"});
                     let modalWrapper = crel("aside", {"class": "modal", "data-modal-id": ++self._counter});
@@ -566,9 +589,11 @@ window.App = (function () {
                     }
                 },
                 place: function (x, y) {
-                    if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
-                        return;
-                    }
+                    return;
+                    //TODO
+                    // if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
+                    //     return;
+                    // }
                     self._place(x, y);
                 },
                 _place: function (x, y) {
@@ -594,6 +619,7 @@ window.App = (function () {
                             x: boardPos.x |= 0,
                             y: boardPos.y |= 0
                         };
+                        status.setValue(status.DefaultKeyMap['cursor-pos'], `(${self.reticule.x}, ${self.reticule.y})`);
                     }
                     if (self.color === -1) {
                         self.elements.reticule.hide();
@@ -610,6 +636,13 @@ window.App = (function () {
                     }).show();
                     self.elements.cursor.show();
                 },
+                setNumberedPaletteEnabled: function(shouldBeNumbered) {
+                    self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
+                },
+                setNumberedPaletteBase: function(base) {
+                    base >>= 0;
+                    self.elements.palette[0].querySelectorAll('.palette-number').forEach(x => x.textContent = (x.dataset['idx'] >> 0) + base);
+                },
                 setPalette: function (palette) {
                     self.palette = palette;
                     self.elements.palette.find(".palette-color").remove().end().append(
@@ -619,10 +652,14 @@ window.App = (function () {
                                 .addClass("palette-color")
                                 .addClass("ontouchstart" in window ? "touch" : "no-touch")
                                 .css("background-color", self.palette[idx])
+                                .append(
+                                    $("<span>").addClass("palette-number").text(idx)
+                                )
                                 .click(function () {
-                                    if (ls.get("auto_reset") === false || timer.cooledDown()) {
-                                        self.switch(idx);
-                                    }
+                                    self.switch(idx);
+                                    //TODO
+                                    // if (ls.get("auto_reset") === false || timer.cooledDown()) {
+                                    // }
                                 });
                         })
                     );
@@ -649,6 +686,7 @@ window.App = (function () {
                     self.elements.cursor.hide();
                     document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
+                    console.log('attaching mousemove to board: %o', board.getRenderBoard());
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
                         self.update(evt.clientX, evt.clientY);
                     });
@@ -767,6 +805,8 @@ window.App = (function () {
                 setPalette: self.setPalette,
                 getPaletteRGB: self.getPaletteRGB,
                 setAutoReset: self.setAutoReset,
+                setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
+                setNumberedPaletteBase: self.setNumberedPaletteBase,
                 get color() {
                     return self.color;
                 }
@@ -1167,7 +1207,6 @@ window.App = (function () {
                 init: function () {
                     $(window).on('pxls:draw.finished', () => {
                         document.querySelector('.userinfo-name').textContent = self._userinfo === false ? 'Log In/Register' : self._userinfo.username || '-snip-';
-                        console.log(self._data);
                     });
                     self.elements.userMessage.hide();
                     self.elements.signup.hide();
@@ -1200,7 +1239,7 @@ window.App = (function () {
                         }
                     });
                     socket.on("users", function (data) {
-                        self.elements.users.text(data.count + " online").fadeIn(200);
+                        status.setValue(status.DefaultKeyMap['online-count'], data.count);
                     });
                     socket.on("session_limit", function (data) {
                         socket.close();
@@ -1209,7 +1248,6 @@ window.App = (function () {
                     socket.on("userinfo", function (data) {
                         let isBanned = false,
                             banelem = $("<div>").addClass("ban-alert-content");
-                        console.log('userinfo: %o', data);
                         self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self._userinfo = data;
@@ -1350,7 +1388,6 @@ window.App = (function () {
                     self.update();
                     self.loaded = true;
                     self.replayBuffer();
-                    console.log('triggering pxls:draw.finished');
                     $(window).trigger('pxls:draw.finished');
                 },
                 initInteraction: function () {
@@ -1612,6 +1649,8 @@ window.App = (function () {
                         y: Math.round((self.height / 2) - self.pan.y),
                         scale: Math.round(self.scale * 100) / 100
                     }, true);
+                    status.setValue(status.DefaultKeyMap['pan'], `(${Math.round((self.width / 2) - self.pan.x)}, ${Math.round((self.height / 2) - self.pan.y)})`);
+                    status.setValue(status.DefaultKeyMap['scale'], Math.round(self.scale * 100) / 100);
                     if (self.use_js_render) {
                         const ctx2 = self.elements.board_render[0].getContext("2d");
                         let pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
@@ -1829,6 +1868,9 @@ window.App = (function () {
                 },
                 getRenderBoard: function () {
                     return self.elements.board_render;
+                },
+                get board() {
+                    return self.elements.board;
                 }
             };
             return {
@@ -1904,6 +1946,19 @@ window.App = (function () {
                     }).catch(e => {
                         document.getElementById('info-target').textContent = 'Failed to fetch info';
                     });
+
+                    let generalSettingsBody = panels.getBodyFor('settings').querySelector('.general-settings');
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Keep color selected', 'auto_reset', {defaultState: true}));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Mute audio', 'audio_muted'));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Allow zoom values greater than 50x', 'increased_zoom'));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Enable scrolling on the palette to switch colors', 'scrollSwitchEnabled', {defaultState: true}));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Invert scroll direction', 'scrollSwitchDirectionInverted', {indent: 1}));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Add numbers to palette entries', 'enableNumberedPalette', {onchange: (event, newState) => {
+                        place.setNumberedPaletteEnabled(!!newState);
+                    }}));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Start at 1', 'enableNumberedPalette', {indent: 1, onchange: (event, newState) => {
+                        place.setNumberedPaletteBase(!!newState ? 1 : 0);
+                    }}));
                 }
             };
             return {
@@ -2031,8 +2086,49 @@ window.App = (function () {
                 elements: {
                     status: $('#status')
                 },
+                _elemCache: {},
+                DefaultKeyMap: {
+                    'cursor-pos': 'Cursor Position:',
+                    'stack-count': 'Pixels Available:',
+                    'scale': 'Zoom:',
+                    'online-count': 'Online:',
+                    'pan': 'Pan Position:'
+                },
                 init: () => {
                     self.elements.status[0].dataset['init'] = '1';
+                    self.register(self.DefaultKeyMap['cursor-pos'], '(0, 0)');
+                    self.register(self.DefaultKeyMap['pan'], '(0, 0)');
+                    self.register(self.DefaultKeyMap['stack-count'], '0/0');
+                    self.register(self.DefaultKeyMap['scale'], '1x');
+                    self.register(self.DefaultKeyMap['online-count'], '0');
+                },
+                register: (key, initialValue, options = {}) => {
+                    self.setValue(key, initialValue, options);
+                },
+                valueElemFor: (key) => {
+                    let cached = self._elemCache[key];
+                    if (!cached) {
+                        cached = crel('span', {'data-for': key});
+                        self._elemCache[key] = cached;
+                        crel(self.elements.status[0], crel('p', {'data-key': key, 'class': 'status-line'}, key, self._elemCache[key]));
+                    }
+                    return cached;
+                },
+                hide: key => {
+                    self.elements.status[0].querySelector(`[data-key="${key}"]`).classList.toggle('hide', true);
+                },
+                show: key => {
+                    self.elements.status[0].querySelector(`[data-key="${key}"]`).classList.toggle('hide', false);
+                },
+                setValue: (key, value, options) => {
+                    options = Object.assign({classes: '', styles: ''}, options);
+                    let elem = self.valueElemFor(key);
+                    elem.className = options.classes;
+                    elem.setAttribute('style', options.styles);
+                    elem.textContent = value;
+                },
+                addCustomLine: (lineElem) => {
+                    if (typeof lineElem === 'string') lineElem = crel('p', lineElem);
                 },
                 update: () => {
                     //
@@ -2040,7 +2136,16 @@ window.App = (function () {
             };
             return {
                 init: self.init,
-                update: self.update
+                update: self.update,
+                valueElemFor: self.valueElemFor,
+                setValue: self.setValue,
+                register: self.register,
+                show: self.show,
+                hide: self.hide,
+                addCustomLine: self.addCustomLine,
+                get DefaultKeyMap() {
+                    return self.DefaultKeyMap;
+                }
             };
         })();
     // init progress
@@ -2073,6 +2178,8 @@ window.App = (function () {
     board.init();
     socket.init();
     status.init();
+    board.init();
+    place.init();
 
     // and here we finally go...
     board.start();

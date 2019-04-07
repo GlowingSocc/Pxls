@@ -26,6 +26,10 @@ footer {
     background-image: linear-gradient(to bottom, #d2d2d2, #9f9f9f);
     border-bottom: none;
     border-top: 1px solid #000;
+    z-index: 90;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
 }
 
 header.darker {
@@ -65,11 +69,13 @@ header >.left, header >.right {
 header >.left {
     margin-left: initial;
     margin-right: auto;
+    padding-left: .5rem;
 }
 
 header >.right {
     margin-left:auto;
     margin-right: initial;
+    padding-right: .5rem;
 }
 
 header >.mid {
@@ -159,6 +165,22 @@ a:hover {
     image-rendering: crisp-edges;
 }
 
+.checkbox-label {
+    cursor: pointer;
+    user-select: none;
+    display: block;
+}
+
+
+.checkbox-label:not(.indented):not(:first-of-type) {
+    margin-top:1rem;
+}
+
+.checkbox-label > input[type=checkbox] {
+    position: relative;
+    top: 2px;
+    margin-right: .25em;
+}
 
 /* STATUS */
 
@@ -169,51 +191,36 @@ a:hover {
 .status {
     z-index: 98;
     position: fixed;
-    bottom: 1rem;
+    top: 3rem;
     left: 1rem;
-    padding: 1rem;
+    padding: .5rem;
     background-color: #000a;
+    color: #fff;
     border-radius: .5rem;
+}
+
+.status > .status-line {
+    margin: .25rem 0;
+}
+
+.status > .status-line > span[data-for] {
+    margin-left: .25rem;
+}
+
+.status .status-line.hide {
+    display: none !important;
 }
 
 
 /* INFO-SPECIFIC */
 
-#info-target section:not(:last-of-type) {
-    margin-bottom: 1rem;
-}
-#info-target:first-of-type {
-    margin-top: .5rem;
-}
 #info-target section:last-of-type {
     margin-bottom: .5rem;
-}
-
-#info-target section {
-    border: 1px solid #000;
 }
 
 #info-target p {
     padding: 0;
     margin: .5rem 0;
-}
-
-#info-target section h2 {
-    margin: 0;
-    padding: 0;
-    text-align: center;
-    width:  100%;
-}
-
-#info-target section hr {
-    height: 1px;
-    border: none;
-    margin: 0;
-    background-image: linear-gradient(to right, #000, #888, #000);
-}
-
-#info-target .padme-daddy {
-    padding: .5rem;
 }
 
 #info-target a {
@@ -253,6 +260,76 @@ a:hover {
 
 #mainCanvas {
     display: block;
+}
+
+#palette {
+    z-index: 90;
+    padding: 15px 0 7px;
+    margin: 0 auto;
+
+    overflow-x: auto;
+    text-align: center;
+    white-space: nowrap;
+
+    background-image: linear-gradient(to bottom, #d2d2d2, #9f9f9f);
+    border-bottom: none;
+    border-top: 1px solid #000;
+
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.palette-color {
+    display: inline-block;
+
+    min-width: 32px;
+    min-height: 32px;
+    border: 2px solid black;
+    border-radius: 3px;
+    margin-right: 10px;
+    cursor: pointer;
+    bottom: 0;
+}
+
+.palette-color:first-child {
+    margin-left: 10px;
+}
+
+.palette-color.active,
+.palette-color.no-touch:hover {
+    position: relative;
+    bottom: 7px;
+}
+
+.palette-color.deselect-button {
+    background-image: url("./assets/times.svg");
+    background-size: 100% 100%;
+}
+
+.palette-color.no-border {
+    border: none;
+}
+
+.palette-number {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border-radius: 16px;
+    text-align: center;
+    background-color: #fff;
+    border: 1px solid #000;
+    width: 2em;
+    font-size: .75em;
+    user-select: none;
+    height: 1.25em;
+    line-height: 1.25em;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+}
+
+#palette.no-pills .palette-number {
+    display: none !important;
 }
 
 
@@ -296,12 +373,42 @@ a:hover {
 }
 
 .panel-body {
+    margin-top: .5rem;
     padding: 0 .5rem;
     overflow: auto;
     position: absolute;
     top: 2.65rem;
     bottom: 0;
+    left: 0;
+    right: 0;
     word-wrap: break-word;
+}
+
+
+.panel-body section:not(:last-of-type) {
+    margin-bottom: 1rem;
+}
+
+.panel-body section {
+    border: 1px solid #000;
+}
+
+.panel-body section h2 {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    width:  100%;
+}
+
+.panel-body section hr {
+    height: 1px;
+    border: none;
+    margin: 0;
+    background-image: linear-gradient(to right, #000, #888, #000);
+}
+
+.panel-body section .section-body {
+    padding: .5rem;
 }
 
 .panel-trigger {
