@@ -25,6 +25,7 @@ window.App = (() => {
                     c_value += ((exdays === null) ? '' : '; expires=' + exdate.toUTCString());
                     document.cookie = c_name + '=' + c_value;
                 };
+
             function get(name) {
                 let s = support() ? storageType.getItem(name) : getCookie(prefix + name);
                 try {
@@ -33,6 +34,7 @@ window.App = (() => {
                     return null;
                 }
             }
+
             function set(name, value) {
                 value = JSON.stringify(value);
                 if (support()) {
@@ -41,6 +43,7 @@ window.App = (() => {
                     setCookie(prefix + name, value, exdays)
                 }
             }
+
             function remove(name) {
                 if (support()) {
                     storageType.removeItem(name);
@@ -48,6 +51,7 @@ window.App = (() => {
                     setCookie(prefix + name, '', -1);
                 }
             }
+
             function support() {
                 if (haveSupport === null) {
                     try {
@@ -61,7 +65,8 @@ window.App = (() => {
                 return haveSupport;
             }
 
-            function noop() {}
+            function noop() {
+            }
 
             return {
                 support,
@@ -77,11 +82,14 @@ window.App = (() => {
                     }
                     let input = crel('input', {type: 'checkbox', 'data-option': lsOption});
                     input.checked = !!fetched;
-                    input.addEventListener('change', function(e) {
+                    input.addEventListener('change', function (e) {
                         set(lsOption, !!this.checked);
                         if (typeof options.onchange === 'function') options.onchange(e, !!this.checked);
                     });
-                    return crel('label', {class: 'checkbox-label' + (options.indent > 0 ? ' indented' : ''), style: options.indent > 0 ? `text-indent: ${options.indent}rem` : ''}, input, inputText || '');
+                    return crel('label', {
+                        class: 'checkbox-label' + (options.indent > 0 ? ' indented' : ''),
+                        style: options.indent > 0 ? `text-indent: ${options.indent}rem` : ''
+                    }, input, inputText || '');
                 }
             };
         },
@@ -360,7 +368,8 @@ window.App = (() => {
                     }, 3000);
                 },
                 reconnectSocket: () => {
-                    self.ws.onclose = () => { };
+                    self.ws.onclose = () => {
+                    };
                     self.connectSocket();
                 },
                 connectSocket: () => {
@@ -384,7 +393,8 @@ window.App = (() => {
                     self.connectSocket();
 
                     $(window).on("beforeunload", () => {
-                        self.ws.onclose = () => { };
+                        self.ws.onclose = () => {
+                        };
                         self.close();
                     });
 
@@ -434,7 +444,8 @@ window.App = (() => {
         })(),
         modal = (() => {
             let self = {
-                noop: () => {},
+                noop: () => {
+                },
                 _modals: [],
                 _counter: 0,
                 showText: text => {
@@ -453,7 +464,10 @@ window.App = (() => {
                     let modalBackdrop = crel("div", {"class": "modal-backdrop"});
                     let modalWrapper = crel("aside", {"class": "modal", "data-modal-id": ++self._counter});
                     let modalHeader = crel("header", {"class": "modal-header"},
-                        crel("div", {"class": "left"}, crel("i", {"class": "fas fa-exclamation-triangle text-orange fa-1_5x fa-is-left", "style": "position: relative; top: 2px; text-shadow: #000 0 0 3px"})),
+                        crel("div", {"class": "left"}, crel("i", {
+                            "class": "fas fa-exclamation-triangle text-orange fa-1_5x fa-is-left",
+                            "style": "position: relative; top: 2px; text-shadow: #000 0 0 3px"
+                        })),
                         crel("div", {"class": "mid"}, title || "Pxls: Alert"),
                         crel("div", {"class": "right"}, crel("i", {"class": "fas fa-times modal-close-button cursor-pointer"}))
                     );
@@ -483,7 +497,7 @@ window.App = (() => {
                     document.body.append(modalWrapper);
                     document.body.classList.add('modal-open');
                 },
-                buttons: (buttons=[], addOK = true) => {
+                buttons: (buttons = [], addOK = true) => {
                     if (buttons == null) buttons = [];
                     if (!Array.isArray(buttons)) buttons = [buttons];
                     if (addOK) {
@@ -492,7 +506,7 @@ window.App = (() => {
                     return buttons;
                 },
                 _button: (text, onclick) => {
-                    if (typeof(onclick) !== "function") onclick = self.noop;
+                    if (typeof (onclick) !== "function") onclick = self.noop;
                     const toRet = crel("button", {"class": "button modal-button modal-close-button"}, text);
                     toRet.addEventListener("click", onclick);
                     return toRet;
@@ -500,7 +514,7 @@ window.App = (() => {
                 _handleClose: e => {
                     if (!e.target) return console.warn('[MODAL:CLOSE] No target? Evt: %o', e);
 
-                    let closestModal = e.target.closest('.modal') || self._modals[self._modals.length-1];
+                    let closestModal = e.target.closest('.modal') || self._modals[self._modals.length - 1];
                     if (!closestModal) { //...? did our backdrop not get cleared? oh well, do some checks and reset as necessary.
                         if (!self._modals.length) {
                             self._maybeCleanupBackdrop();
@@ -584,7 +598,7 @@ window.App = (() => {
                     }
                 },
                 place: (x, y) => {
-                    return;
+                    // return;
                     //TODO
                     // if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
                     //     return;
@@ -724,7 +738,7 @@ window.App = (() => {
                             case "UNDO":
                                 if (uiHelper.getAvailable() === 0)
                                     status.update('stack-count', `${data.ackFor === "PLACE" ? 0 : 1}/${self.maxStacked + 1}`);
-                                    // uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
+                                // uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                                 break;
                         }
                     });
@@ -1088,7 +1102,6 @@ window.App = (() => {
                     //registerToggleCheckbox -> input[type='check' data-setting='virginmap-enabled'].on('click', App.ls.toggle('virginmap-enabled'));
 
 
-
 //                     $("#virginmaptoggle")[0].checked = ls.get("virginmap");
 //                     $("#virginmaptoggle").change(function () {
 //                         if (this.checked) {
@@ -1239,7 +1252,7 @@ window.App = (() => {
                         }
                     });
                     socket.on("users", data => {
-                        status.update(online-count, data.count);
+                        status.update(online - count, data.count);
                     });
                     socket.on("session_limit", data => {
                         socket.close();
@@ -1429,7 +1442,7 @@ window.App = (() => {
                             self.update();
                             place.update();
                         }
-                    }, { passive: true });
+                    }, {passive: true});
 
                     // now init the movement
                     let downX, downY, downStart;
@@ -1442,8 +1455,8 @@ window.App = (() => {
                         });
 
                     //Separated some of these events from jQuery to deal with chrome's complaints about passive event violations.
-                    self.elements.board_render[0].addEventListener("touchstart", handleInputDown, { passive: false });
-                    self.elements.board_render[0].addEventListener("touchmove", handleInputMove, { passive: false });
+                    self.elements.board_render[0].addEventListener("touchstart", handleInputDown, {passive: false});
+                    self.elements.board_render[0].addEventListener("touchmove", handleInputMove, {passive: false});
 
                     function handleInputDown(event) {
                         let clientX = 0,
@@ -1460,10 +1473,14 @@ window.App = (() => {
                         downX = clientX;
                         downY = clientY;
                         if (prereq && self.holdTimer.id === -1) {
-                            self.holdTimer.id = setTimeout(self.holdTimer.handler, self.holdTimer.holdTimeout, { x: clientX, y: clientY });
+                            self.holdTimer.id = setTimeout(self.holdTimer.handler, self.holdTimer.holdTimeout, {
+                                x: clientX,
+                                y: clientY
+                            });
                         }
                         downStart = Date.now();
                     }
+
                     function handleInputMove(event) {
                         if (self.holdTimer.id === -1) return;
                         let clientX = -1, clientY = -1;
@@ -1480,6 +1497,7 @@ window.App = (() => {
                             self.holdTimer.id = -1;
                         }
                     }
+
                     function handleInputUp(event) {
                         if (self.holdTimer.id !== -1) {
                             clearTimeout(self.holdTimer.id);
@@ -1511,7 +1529,7 @@ window.App = (() => {
                             // Is the button pressed the middle mouse button?
                             if (ls.get("enableMiddleMouseSelect") === true && event.button === 1 && dx < 15 && dy < 15) {
                                 // If so, switch to the color at the location.
-                                let { x, y } = self.fromScreen(event.clientX, event.clientY);
+                                let {x, y} = self.fromScreen(event.clientX, event.clientY);
                                 place.switch(self.getPixel(x, y));
                             }
                         }
@@ -1528,21 +1546,21 @@ window.App = (() => {
                                 board.setScale(newValue >> 0);
                                 break;
                             case "template":
-                                template.queueUpdate({ template: newValue, use: newValue !== null });
+                                template.queueUpdate({template: newValue, use: newValue !== null});
                                 break;
                             case "ox":
-                                template.queueUpdate({ ox: newValue === null ? null : newValue >> 0 });
+                                template.queueUpdate({ox: newValue === null ? null : newValue >> 0});
                                 break;
                             case "oy":
-                                template.queueUpdate({ oy: newValue === null ? null : newValue >> 0 });
+                                template.queueUpdate({oy: newValue === null ? null : newValue >> 0});
                                 break;
                             case "tw":
-                                template.queueUpdate({ tw: newValue === null ? null : newValue >> 0 });
+                                template.queueUpdate({tw: newValue === null ? null : newValue >> 0});
                                 break;
                             case "oo":
                                 let parsed = parseFloat(newValue);
                                 if (!Number.isFinite(parsed)) parsed = null;
-                                template.queueUpdate({ oo: parsed === null ? null : parsed });
+                                template.queueUpdate({oo: parsed === null ? null : parsed});
                                 break;
                         }
                     });
@@ -1745,7 +1763,7 @@ window.App = (() => {
                 nudgeScale: adj => {
                     const oldScale = Math.abs(self.scale),
                         sign = Math.sign(self.scale),
-                        maxUnlocked = ls.get("increased_zoom") === true;
+                        greaterZoom = ls.get("increased_zoom") === true;
                     if (adj === -1) {
                         if (oldScale <= 1) {
                             self.scale = 0.5;
@@ -1761,11 +1779,19 @@ window.App = (() => {
                             self.scale = 2;
                         } else {
                             let modifiedScale = oldScale * 1.25;
-                            if (maxUnlocked && oldScale >= 50) {
+                            if (greaterZoom && oldScale >= 50) {
                                 modifiedScale = oldScale * 1.15;
                             }
                             modifiedScale = Math.ceil(modifiedScale);
-                            self.scale = maxUnlocked ? modifiedScale : Math.round(Math.min(50, modifiedScale));
+                            if (greaterZoom) {
+                                //max should be either width, or height, whichever is smaller
+                                let max = Math.min(document.body.getBoundingClientRect().width, document.body.getBoundingClientRect().height, modifiedScale);
+                                console.log('potential max: %o', max);
+                            }
+                            let bodyRect = document.body.getBoundingClientRect(),
+                                headerRect = document.getElementById('mainHeader').getBoundingClientRect(),
+                                paletteRect = document.getElementById('palette').getBoundingClientRect();
+                            self.scale = greaterZoom ? Math.min(bodyRect.width, bodyRect.height-(paletteRect.height + headerRect.height), modifiedScale) : Math.round(Math.min(50, modifiedScale));
                         }
                     }
                     self.scale *= sign;
@@ -1896,7 +1922,7 @@ window.App = (() => {
                         if (!Element.prototype.matches) Element.prototype.matches = Element.prototype.msMatchesSelector || Element.prototype.webkitMatchesSelector;
 
                         if (!Element.prototype.closest)
-                            Element.prototype.closest = function(s) {
+                            Element.prototype.closest = function (s) {
                                 let el = this;
 
                                 do {
@@ -1908,9 +1934,10 @@ window.App = (() => {
                     }
                 }
             };
+
             function recurseMaybe(x) {
                 let _type = typeof x;
-                switch(typeof x) {
+                switch (typeof x) {
                     case 'function': {
                         return x();
                     }
@@ -1920,6 +1947,7 @@ window.App = (() => {
                     }
                 }
             }
+
             return {
                 fill: () => {
                     Object.values(self).forEach(val => {
@@ -1949,12 +1977,16 @@ window.App = (() => {
                     generalSettingsBody.appendChild(ls.generateToggleCheckbox('Allow zoom values greater than 50x', 'increased_zoom'));
                     generalSettingsBody.appendChild(ls.generateToggleCheckbox('Enable scrolling on the palette to switch colors', 'scrollSwitchEnabled', {defaultState: true}));
                     generalSettingsBody.appendChild(ls.generateToggleCheckbox('Invert scroll direction', 'scrollSwitchDirectionInverted', {indent: 1}));
-                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Add numbers to palette entries', 'enableNumberedPalette', {onchange: (event, newState) => {
-                        place.setNumberedPaletteEnabled(!!newState);
-                    }}));
-                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Start at 1', 'enableNumberedPalette', {indent: 1, onchange: (event, newState) => {
-                        place.setNumberedPaletteBase(!!newState ? 1 : 0);
-                    }}));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Add numbers to palette entries', 'enableNumberedPalette', {
+                        onchange: (event, newState) => {
+                            place.setNumberedPaletteEnabled(!!newState);
+                        }
+                    }));
+                    generalSettingsBody.appendChild(ls.generateToggleCheckbox('Start at 1', 'enableNumberedPalette', {
+                        indent: 1, onchange: (event, newState) => {
+                            place.setNumberedPaletteBase(!!newState ? 1 : 0);
+                        }
+                    }));
                 }
             };
             return {
@@ -2023,7 +2055,9 @@ window.App = (() => {
         notification = (() => {
             let self = {
                 init: () => {
-                    Notification.requestPermission().catch(e => {console.error(e)});
+                    Notification.requestPermission().catch(e => {
+                        console.error(e)
+                    });
                 },
                 show: s => {
                     try {
@@ -2092,14 +2126,16 @@ window.App = (() => {
                         ['scale', 'Zoom:', '0'],
                         ['online-count', 'Online:', '0']
                     ].forEach(x => {
-                        console.log(x);
                         self.register(x[0], x[1], x[2]);
                     })
                 },
                 register: (key, descLabel, initialValue) => {
                     let line = self.elements.status[0].querySelector(`[data-line="${key}"]`);
                     if (!line) {
-                        line = crel('p', {'data-line': key, class: 'status-line'}, descLabel, crel('span', {'data-key': key, class: 'status-value'}, initialValue));
+                        line = crel('p', {
+                            'data-line': key,
+                            class: 'status-line'
+                        }, descLabel, crel('span', {'data-key': key, class: 'status-value'}, initialValue));
                         self.elements.status.append(line);
                     }
                 },
@@ -2172,7 +2208,6 @@ window.App = (() => {
 
     // and here we finally go...
     board.start();
-
 
 
     return {

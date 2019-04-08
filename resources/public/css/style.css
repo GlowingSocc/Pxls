@@ -5,6 +5,7 @@ html, body {
     width: 100%;
     height: 100%;
     font-family: sans-serif;
+    overflow: hidden;
     background-color: #CDCDCD;
 }
 
@@ -191,19 +192,21 @@ a:hover {
 .status {
     z-index: 98;
     position: fixed;
+    text-shadow: #000 1px 1px 3px;
     top: 3rem;
     left: 1rem;
     padding: .5rem;
-    background-color: #000a;
+    background-color: #0000;
     color: #fff;
     border-radius: .5rem;
+    background-image: radial-gradient(#101010aa, #000c);
 }
 
 .status > .status-line {
     margin: .25rem 0;
 }
 
-.status > .status-line > span[data-for] {
+.status > .status-line > span[data-key] {
     margin-left: .25rem;
 }
 
@@ -328,6 +331,32 @@ a:hover {
 
 #palette.no-pills .palette-number {
     display: none !important;
+}
+
+#reticule {
+    position: fixed;
+    top: 0;
+    left: 0;
+    margin: 0;
+    border: 2px solid black;
+    background-color: rgba(0, 0, 0, 0);
+    box-sizing: content-box;
+    pointer-events: none;
+}
+
+#reticule:not(.square) {
+    border-radius: 100%;
+}
+
+#cursor {
+    position: fixed;
+    top: 20px;
+    left: 10px;
+
+    width: 36px;
+    height: 36px;
+    border: 2px solid black;
+    border-radius: 3px;
 }
 
 
