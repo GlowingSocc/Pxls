@@ -3,11 +3,11 @@ let instaban = false;
 if (window.App !== undefined) {
     instaban = true;
 }
-window.App = (function () {
+window.App = (() => {
     // first we define the global helperfunctions and figure out what kind of settings our browser needs to use
-    let storageFactory = function (storageType, prefix, exdays) {
+    let storageFactory = (storageType, prefix, exdays) => {
             let haveSupport = null;
-            const getCookie = function (c_name) {
+            const getCookie = c_name => {
                     let i, x, y, ARRcookies = document.cookie.split(";");
                     for (i = 0; i < ARRcookies.length; i++) {
                         x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
@@ -18,7 +18,7 @@ window.App = (function () {
                         }
                     }
                 },
-                setCookie = function (c_name, value, exdays) {
+                setCookie = (c_name, value, exdays) => {
                     let exdate = new Date(),
                         c_value = encodeURIComponent(value);
                     exdate.setDate(exdate.getDate() + exdays);
@@ -68,7 +68,7 @@ window.App = (function () {
                 get,
                 set,
                 remove,
-                generateToggleCheckbox: function(inputText, lsOption, options) {
+                generateToggleCheckbox: (inputText, lsOption, options) => {
                     options = Object.assign({defaultState: false, onchange: noop, indent: 0}, options);
                     let fetched = get(lsOption);
                     if (fetched == null) {
@@ -85,11 +85,11 @@ window.App = (function () {
                 }
             };
         },
-        binary_ajax = function (url, fn, failfn) {
+        binary_ajax = (url, fn, failfn) => {
             let xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.responseType = "arraybuffer";
-            xhr.onload = function (event) {
+            xhr.onload = event => {
                 if (xhr.readyState == 4) {
                     if (xhr.status == 200) {
                         if (xhr.response) {
@@ -103,7 +103,7 @@ window.App = (function () {
             };
             xhr.send(null);
         },
-        createImageData = function (w, h) {
+        createImageData = (w, h) => {
             try {
                 return new ImageData(w, h);
             } catch (e) {
@@ -119,8 +119,8 @@ window.App = (function () {
             }
         },
         nua = navigator.userAgent,
-        have_image_rendering = (function () {
-            let checkImageRendering = function (prefix, crisp, pixelated, optimize_contrast) {
+        have_image_rendering = (() => {
+            let checkImageRendering = (prefix, crisp, pixelated, optimize_contrast) => {
                 let d = document.createElement('div');
                 if (crisp) {
                     d.style.imageRendering = prefix + 'crisp-edges';
@@ -168,15 +168,15 @@ window.App = (function () {
 
     let ls = storageFactory(localStorage, 'ls_', 99),
         ss = storageFactory(sessionStorage, 'ss_', null),
-        query = (function () {
+        query = (() => {
             let self = {
                 params: {},
                 initialized: false,
-                _trigger: function (propName, oldValue, newValue) {
+                _trigger: (propName, oldValue, newValue) => {
                     $(window).trigger("pxls:queryUpdated", [propName, oldValue, newValue]); //window.on("queryUpdated", (event, propName, oldValue, newValue) => {...});
                     //this will cause issues if you're not paying attention. always check for `newValue` to be null in the event of a deleted key.
                 },
-                _update: function (fromEvent) {
+                _update: fromEvent => {
                     let toSplit = window.location.hash.substring(1);
                     if (window.location.search.length > 0)
                         toSplit += ("&" + window.location.search.substring(1));
@@ -240,7 +240,7 @@ window.App = (function () {
                         self.set(k, v, silent);
                     }
                 },
-                init: function () {
+                init: () => {
                     if (ss.get("url_params")) {
                         window.location.hash = ss.get("url_params");
                         ss.remove("url_params");
@@ -250,13 +250,13 @@ window.App = (function () {
                         if ("replaceState" in window.history) {
                             // We disable this if `replaceState` is missing because this will call _update every time the `window.location.hash` is set programatically.
                             // Simply scrolling around the map would constantly call `board.centerOn` because x/y would be modified.
-                            window.onhashchange = function () {
+                            window.onhashchange = () => {
                                 self._update(true);
                             };
                         }
                     }
 
-                    $(window).on("message", function (evt) {
+                    $(window).on("message", evt => {
                         //TODO
 
                         // evt = evt.originalEvent;
@@ -276,10 +276,8 @@ window.App = (function () {
                         // }
                     });
                 },
-                has: function (key) {
-                    return self.get(key) != null;
-                },
-                getStr: function () {
+                has: key => self.get(key) != null,
+                getStr: () => {
                     let params = [];
                     for (let p in self.params) {
                         if (self.params.hasOwnProperty(p)) {
@@ -296,7 +294,7 @@ window.App = (function () {
                     }
                     return params.join("&");
                 },
-                update: function () {
+                update: () => {
                     let s = self.getStr();
                     if (window.history.replaceState) {
                         window.history.replaceState(null, null, '#' + s);
@@ -304,16 +302,14 @@ window.App = (function () {
                         window.location.hash = s;
                     }
                 },
-                set: function (n, v, silent) {
+                set: (n, v, silent) => {
                     let oldValue = self.params[n];
                     self.params[n] = v.toString();
                     if (silent !== true) self._trigger(n, oldValue, v.toString());
                     self.lazy_update();
                 },
-                get: function (n) {
-                    return self.params[n];
-                },
-                remove: function (n, silent) {
+                get: n => self.params[n],
+                remove: (n, silent) => {
                     delete self.params[n];
                     self.lazy_update();
 
@@ -321,11 +317,11 @@ window.App = (function () {
                         self._trigger(n, self.params[n], null);
                 },
                 timer: null,
-                lazy_update: function () {
+                lazy_update: () => {
                     if (self.timer !== null) {
                         clearTimeout(self.timer);
                     }
-                    self.timer = setTimeout(function () {
+                    self.timer = setTimeout(() => {
                         self.timer = null;
                         self.update();
                     }, 200);
@@ -341,7 +337,7 @@ window.App = (function () {
                 lazy_update: self.lazy_update
             };
         })(),
-        socket = (function () {
+        socket = (() => {
             const self = {
                 ws: null,
                 ws_constructor: WebSocket,
@@ -349,35 +345,35 @@ window.App = (function () {
                 wps: WebSocket.prototype.send, // make sure we have backups of those....
                 wpc: WebSocket.prototype.close,
                 wsURL: '',
-                setWSUrl: function(wsurl) {
+                setWSUrl: wsurl => {
                     self.wsURL = wsurl;
                 },
-                reconnect: function () {
+                reconnect: () => {
                     $("#reconnecting").show();
-                    setTimeout(function () {
-                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
+                    setTimeout(() => {
+                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), () => {
                             window.location.reload();
-                        }).fail(function () {
+                        }).fail(() => {
                             console.log("Server still down...");
                             self.reconnect();
                         });
                     }, 3000);
                 },
-                reconnectSocket: function () {
-                    self.ws.onclose = function () { };
+                reconnectSocket: () => {
+                    self.ws.onclose = () => { };
                     self.connectSocket();
                 },
-                connectSocket: function () {
+                connectSocket: () => {
                     self.ws = new self.ws_constructor(self.wsURL);
-                    self.ws.onmessage = function (msg) {
+                    self.ws.onmessage = msg => {
                         let data = JSON.parse(msg.data);
                         self.hooks.forEach(hook => hook.type === data.type && hook.fn(data));
                     };
-                    self.ws.onclose = function () {
+                    self.ws.onclose = () => {
                         self.reconnect();
                     };
                 },
-                init: function () {
+                init: () => {
                     if (self.ws !== null) {
                         return; // already inited!
                     }
@@ -387,8 +383,8 @@ window.App = (function () {
                     self.on("userinfo", ui.userinfo);
                     self.connectSocket();
 
-                    $(window).on("beforeunload", function () {
-                        self.ws.onclose = function () { };
+                    $(window).on("beforeunload", () => {
+                        self.ws.onclose = () => { };
                         self.close();
                     });
 
@@ -397,17 +393,17 @@ window.App = (function () {
                     $("#loading").fadeOut(500);
                     // user.wsinit();
                 },
-                on: function (type, fn) {
+                on: (type, fn) => {
                     self.hooks.push({
                         type: type,
                         fn: fn
                     });
                 },
-                close: function () {
+                close: () => {
                     self.ws.close = self.wpc;
                     self.ws.close();
                 },
-                send: function (s) {
+                send: s => {
                     self.ws.send = self.wps;
                     if (typeof s == "string") {
                         self.ws.send(s);
@@ -426,9 +422,9 @@ window.App = (function () {
                 setWSURL: self.setWSUrl
             };
         })(),
-        handlebars = (function() {
+        handlebars = (() => {
             let self = {
-                init: function() {
+                init: () => {
                     //
                 }
             };
@@ -436,7 +432,7 @@ window.App = (function () {
                 init: self.init
             }
         })(),
-        modal = (function() {
+        modal = (() => {
             let self = {
                 noop: () => {},
                 _modals: [],
@@ -542,7 +538,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of placing pixels, the palette, the reticule and stuff associated with that
-        place = (function () {
+        place = (() => {
             const self = {
                 elements: {
                     palette: $("#palette"),
@@ -564,11 +560,10 @@ window.App = (function () {
                     color: -1
                 },
                 autoreset: true,
-                setAutoReset: function (v) {
-                    self.autoreset = v ? true : false;
-                    ls.set("auto_reset", self.autoreset);
-                },
-                switch: function (newColor) {
+                maxStacked: 0,
+                setMaxStacked: i => self.maxStacked = i,
+                setAutoReset: v => ls.set("auto_reset", (self.autoreset = !!v)),
+                switch: newColor => {
                     self.color = newColor;
                     ls.set('color', newColor);
                     $(".palette-color").removeClass("active");
@@ -588,7 +583,7 @@ window.App = (function () {
                         $($(".palette-color[data-idx=" + newColor + "],.palette-color[data-idx=-1]")).addClass("active"); //Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
                     }
                 },
-                place: function (x, y) {
+                place: (x, y) => {
                     return;
                     //TODO
                     // if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
@@ -596,7 +591,7 @@ window.App = (function () {
                     // }
                     self._place(x, y);
                 },
-                _place: function (x, y) {
+                _place: (x, y) => {
                     self.pendingPixel.x = x;
                     self.pendingPixel.y = y;
                     self.pendingPixel.color = self.color;
@@ -612,14 +607,14 @@ window.App = (function () {
                         self.switch(-1);
                     }
                 },
-                update: function (clientX, clientY) {
+                update: (clientX, clientY) => {
                     if (clientX !== undefined) {
                         const boardPos = board.fromScreen(clientX, clientY);
                         self.reticule = {
                             x: boardPos.x |= 0,
                             y: boardPos.y |= 0
                         };
-                        status.setValue(status.DefaultKeyMap['cursor-pos'], `(${self.reticule.x}, ${self.reticule.y})`);
+                        status.update('cursor-pos', `(${self.reticule.x}, ${self.reticule.y})`);
                     }
                     if (self.color === -1) {
                         self.elements.reticule.hide();
@@ -636,61 +631,58 @@ window.App = (function () {
                     }).show();
                     self.elements.cursor.show();
                 },
-                setNumberedPaletteEnabled: function(shouldBeNumbered) {
+                setNumberedPaletteEnabled: shouldBeNumbered => {
                     self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
                 },
-                setNumberedPaletteBase: function(base) {
+                setNumberedPaletteBase: base => {
                     base >>= 0;
                     self.elements.palette[0].querySelectorAll('.palette-number').forEach(x => x.textContent = (x.dataset['idx'] >> 0) + base);
                 },
-                setPalette: function (palette) {
+                setPalette: palette => {
                     self.palette = palette;
                     self.elements.palette.find(".palette-color").remove().end().append(
-                        $.map(self.palette, function (p, idx) {
-                            return $("<div>")
-                                .attr("data-idx", idx)
-                                .addClass("palette-color")
-                                .addClass("ontouchstart" in window ? "touch" : "no-touch")
-                                .css("background-color", self.palette[idx])
-                                .append(
-                                    $("<span>").addClass("palette-number").text(idx)
-                                )
-                                .click(function () {
-                                    self.switch(idx);
-                                    //TODO
-                                    // if (ls.get("auto_reset") === false || timer.cooledDown()) {
-                                    // }
-                                });
-                        })
+                        $.map(self.palette, (p, idx) => $("<div>")
+                            .attr("data-idx", idx)
+                            .addClass("palette-color")
+                            .addClass("ontouchstart" in window ? "touch" : "no-touch")
+                            .css("background-color", self.palette[idx])
+                            .append(
+                                $("<span>").addClass("palette-number").text(idx)
+                            )
+                            .click(() => {
+                                self.switch(idx);
+                                //TODO
+                                // if (ls.get("auto_reset") === false || timer.cooledDown()) {
+                                // }
+                            }))
                     );
                     self.elements.palette.prepend(
                         $("<div>")
                             .attr("data-idx", -1)
                             .addClass("palette-color no-border deselect-button")
                             .addClass("ontouchstart" in window ? "touch" : "no-touch").css("background-color", "transparent")
-                            .click(function () {
+                            .click(() => {
                                 self.switch(-1);
                             })
                     );
                 },
                 can_undo: false,
-                undo: function (evt) {
+                undo: evt => {
                     evt.stopPropagation();
                     socket.send({type: 'undo'});
                     self.can_undo = false;
                     document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                 },
-                init: function () {
+                init: () => {
                     self.elements.reticule.hide();
                     self.elements.cursor.hide();
                     document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
-                    console.log('attaching mousemove to board: %o', board.getRenderBoard());
-                    board.getRenderBoard().on("pointermove mousemove", function (evt) {
+                    board.getRenderBoard().on("pointermove mousemove", evt => {
                         self.update(evt.clientX, evt.clientY);
                     });
-                    $(window).on("pointermove mousemove touchstart touchmove", function (evt) {
+                    $(window).on("pointermove mousemove touchstart touchmove", evt => {
                         let x = 0,
                             y = 0;
                         if (evt.changedTouches && evt.changedTouches[0]) {
@@ -703,25 +695,25 @@ window.App = (function () {
 
                         self.elements.cursor.css("transform", "translate(" + x + "px, " + y + "px)");
                         if (self.can_undo) {
-                            return;
+                            return false;
                         }
-                    }).keydown(function (evt) {
+                    }).keydown(evt => {
                         if (self.can_undo && (evt.key == "z" || evt.key == "Z" || evt.keyCode == 90) && evt.ctrlKey) {
                             self.undo(evt);
                         }
-                    }).on("touchstart", function (evt) {
+                    }).on("touchstart", evt => {
                         if (self.color === -1 || self.can_undo) {
-                            return;
+                            return false;
                         }
                     });
-                    socket.on("pixel", function (data) {
-                        $.map(data.pixels, function (px) {
+                    socket.on("pixel", data => {
+                        $.map(data.pixels, px => {
                             board.setPixel(px.x, px.y, px.color, false);
                         });
                         board.refresh();
                         board.update(true);
                     });
-                    socket.on("ACK", function (data) {
+                    socket.on("ACK", data => {
                         switch (data.ackFor) {
                             case "PLACE":
                                 if (!ls.get("audio_muted")) {
@@ -731,17 +723,18 @@ window.App = (function () {
                                 }
                             case "UNDO":
                                 if (uiHelper.getAvailable() === 0)
-                                    uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
+                                    status.update('stack-count', `${data.ackFor === "PLACE" ? 0 : 1}/${self.maxStacked + 1}`);
+                                    // uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                                 break;
                         }
                     });
-                    socket.on("captcha_required", function (data) {
+                    socket.on("captcha_required", data => {
                         grecaptcha.reset();
                         grecaptcha.execute();
 
                         analytics("send", "event", "Captcha", "Execute")
                     });
-                    socket.on("captcha_status", function (data) {
+                    socket.on("captcha_status", data => {
                         if (data.success) {
                             const pending = self.pendingPixel;
                             self.switch(pending.color);
@@ -753,12 +746,12 @@ window.App = (function () {
                             analytics("send", "event", "Captcha", "Failed")
                         }
                     });
-                    socket.on("can_undo", function (data) {
+                    socket.on("can_undo", data => {
                         document.body.classList.add("undo-visible");
                         self.elements.undo.addClass("open");
                         self.can_undo = true;
                         if (self.undoTimeout !== false) clearTimeout(self.undoTimeout);
-                        self.undoTimeout = setTimeout(function () {
+                        self.undoTimeout = setTimeout(() => {
                             document.body.classList.remove("undo-visible");
                             self.elements.undo.removeClass("open");
                             self.can_undo = false;
@@ -766,7 +759,7 @@ window.App = (function () {
                         }, data.time * 1000);
                     });
                     self.elements.undo.click(self.undo);
-                    window.recaptchaCallback = function (token) {
+                    window.recaptchaCallback = token => {
                         socket.send({
                             type: "captcha",
                             token: token
@@ -780,7 +773,7 @@ window.App = (function () {
                         self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);
                     });
                 },
-                hexToRgb: function (hex) {
+                hexToRgb: hex => {
                     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                     return result ? {
                         r: parseInt(result[1], 16),
@@ -788,9 +781,9 @@ window.App = (function () {
                         b: parseInt(result[3], 16)
                     } : null;
                 },
-                getPaletteRGB: function () {
+                getPaletteRGB: () => {
                     const a = new Uint32Array(self.palette.length);
-                    $.map(self.palette, function (c, i) {
+                    $.map(self.palette, (c, i) => {
                         const rgb = self.hexToRgb(c);
                         a[i] = 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
                     });
@@ -802,6 +795,7 @@ window.App = (function () {
                 update: self.update,
                 place: self.place,
                 switch: self.switch,
+                setMaxStacked: self.setMaxStacked,
                 setPalette: self.setPalette,
                 getPaletteRGB: self.getPaletteRGB,
                 setAutoReset: self.setAutoReset,
@@ -812,7 +806,17 @@ window.App = (function () {
                 }
             };
         })(),
-        heatmap = (function () {
+        timer = (() => {
+            let self = {
+                init: () => {
+                    status.register('')
+                }
+            };
+            return {
+                init: self.init
+            };
+        })(),
+        heatmap = (() => {
             const self = {
                 elements: {
                     heatmap: $("#heatmap"),
@@ -826,7 +830,7 @@ window.App = (function () {
                 lazy_inited: false,
                 is_shown: false,
                 color: 0x005C5CCD,
-                loop: function () {
+                loop: () => {
                     for (let i = 0; i < self.width * self.height; i++) {
                         let opacity = self.intView[i] >> 24;
                         if (opacity) {
@@ -837,7 +841,7 @@ window.App = (function () {
                     self.ctx.putImageData(self.id, 0, 0);
                     setTimeout(self.loop, self.seconds * 1000 / 256);
                 },
-                lazy_init: function () {
+                lazy_init: () => {
                     if (self.lazy_inited) {
                         self.elements.heatmapLoadingBubble.hide();
                         return;
@@ -845,7 +849,7 @@ window.App = (function () {
                     self.elements.heatmapLoadingBubble.show();
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
-                    binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function (data) {
+                    binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), data => {
                         self.ctx = self.elements.heatmap[0].getContext("2d");
                         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
                         self.id = createImageData(self.width, self.height);
@@ -858,25 +862,25 @@ window.App = (function () {
                         self.elements.heatmap.fadeIn(200);
                         self.elements.heatmapLoadingBubble.hide();
                         setTimeout(self.loop, self.seconds * 1000 / 256);
-                        socket.on("pixel", function (data) {
+                        socket.on("pixel", data => {
                             self.ctx.fillStyle = "#CD5C5C";
-                            $.map(data.pixels, function (px) {
+                            $.map(data.pixels, px => {
                                 self.ctx.fillRect(px.x, px.y, 1, 1);
                                 self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
                             });
                         });
                     });
                 },
-                clear: function () {
+                clear: () => {
                     self._clear();
                 },
-                _clear: function () {
+                _clear: () => {
                     for (let i = 0; i < self.width * self.height; i++) {
                         self.intView[i] = 0;
                     }
                     self.ctx.putImageData(self.id, 0, 0);
                 },
-                setBackgroundOpacity: function (opacity) {
+                setBackgroundOpacity: opacity => {
                     if (typeof (opacity) === "string") {
                         opacity = parseFloat(opacity);
                         if (isNaN(opacity)) opacity = 0.5;
@@ -887,7 +891,7 @@ window.App = (function () {
                     ls.set("heatmap_background_opacity", opacity);
                     self.elements.heatmap.css("background-color", "rgba(0, 0, 0, " + opacity + ")");
                 },
-                init: function () {
+                init: () => {
                     self.elements.heatmap.hide();
                     self.elements.heatmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("heatmap_background_opacity"));
@@ -904,11 +908,11 @@ window.App = (function () {
                     //     }
                     // });
                 },
-                show: function () {
+                show: () => {
                     self.is_shown = false;
                     self.toggle();
                 },
-                hide: function () {
+                hide: () => {
                     self.is_shown = true;
                     self.toggle();
                 },
@@ -928,7 +932,7 @@ window.App = (function () {
                         self.lazy_init();
                     }
                 },
-                webinit: function (data) {
+                webinit: data => {
                     self.width = data.width;
                     self.height = data.height;
                     self.seconds = data.heatmapCooldown;
@@ -965,7 +969,7 @@ window.App = (function () {
             };
         })(),
         // Virginmaps are like heatmaps
-        virginmap = (function () {
+        virginmap = (() => {
             const self = {
                 elements: {
                     virginmap: $("#virginmap"),
@@ -977,7 +981,7 @@ window.App = (function () {
                 height: 0,
                 lazy_inited: false,
                 is_shown: false,
-                lazy_init: function () {
+                lazy_init: () => {
                     if (self.lazy_inited) {
                         self.elements.virginmapLoadingBubble.hide();
                         return;
@@ -985,7 +989,7 @@ window.App = (function () {
                     self.elements.virginmapLoadingBubble.show();
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
-                    binary_ajax("/virginmap" + "?_" + (new Date()).getTime(), function (data) {
+                    binary_ajax("/virginmap" + "?_" + (new Date()).getTime(), data => {
                         self.ctx = self.elements.virginmap[0].getContext("2d");
                         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
                         self.id = createImageData(self.width, self.height);
@@ -1003,22 +1007,22 @@ window.App = (function () {
                         }
                         self.elements.virginmap.fadeIn(200);
                         self.elements.virginmapLoadingBubble.hide();
-                        socket.on("pixel", function (data) {
-                            $.map(data.pixels, function (px) {
+                        socket.on("pixel", data => {
+                            $.map(data.pixels, px => {
                                 self.ctx.fillRect(px.x, px.y, 1, 1);
                             });
                         });
                     });
                 },
-                clear: function () {
+                clear: () => {
                     self._clear();
                 },
-                _clear: function () {
+                _clear: () => {
                     self.ctx.putImageData(self.id, 0, 0);
                     self.ctx.fillStyle = "#00FF00";
                     self.ctx.fillRect(0, 0, self.width, self.height);
                 },
-                setBackgroundOpacity: function (opacity) {
+                setBackgroundOpacity: opacity => {
                     if (typeof (opacity) === "string") {
                         opacity = parseFloat(opacity);
                         if (isNaN(opacity)) opacity = 0.5;
@@ -1029,27 +1033,27 @@ window.App = (function () {
                     ls.set("virginmap_background_opacity", opacity);
                     self.elements.virginmap.css("background-color", "rgba(0, 255, 0, " + opacity + ")");
                 },
-                init: function () {
+                init: () => {
                     self.elements.virginmap.hide();
                     self.elements.virginmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("virginmap_background_opacity"));
                     $("#virginmap-opacity").val(ls.get("virginmap_background_opacity")).on("change input", function () {
                         self.setBackgroundOpacity(parseFloat(this.value));
                     });
-                    $("#hvmapClear").on('click', function () {
+                    $("#hvmapClear").on('click', () => {
                         self.clear();
                     });
-                    $(window).keydown(function (evt) {
+                    $(window).keydown(evt => {
                         if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
                             self.clear();
                         }
                     });
                 },
-                show: function () {
+                show: () => {
                     self.is_shown = false;
                     self.toggle();
                 },
-                hide: function () {
+                hide: () => {
                     self.is_shown = true;
                     self.toggle();
                 },
@@ -1069,7 +1073,7 @@ window.App = (function () {
                         self.lazy_init();
                     }
                 },
-                webinit: function (data) {
+                webinit: data => {
                     self.width = data.width;
                     self.height = data.height;
                     self.seconds = data.virginmapCooldown;
@@ -1110,7 +1114,7 @@ window.App = (function () {
                 clear: self.clear
             };
         })(),
-        user = (function () {
+        user = (() => {
             let self = {
                 elements: {
                     users: $("#online"),
@@ -1125,10 +1129,8 @@ window.App = (function () {
                 loggedIn: false,
                 _data: false,
                 _userinfo: false,
-                getRole: function () {
-                    return self.role;
-                },
-                signin: function () {
+                getRole: () => self.role,
+                signin: () => {
                     let data = ls.get("auth_respond");
                     if (!data) {
                         return;
@@ -1142,12 +1144,10 @@ window.App = (function () {
                     }
                     self.elements.prompt.fadeOut(200);
                 },
-                isLoggedIn: function () {
-                    return self.loggedIn;
-                },
-                webinit: function (data) {
+                isLoggedIn: () => self.loggedIn,
+                webinit: data => {
                     self._data = data;
-                    self.elements.loginOverlay.find("a").on("click", function (evt) {
+                    self.elements.loginOverlay.find("a").on("click", evt => {
                         evt.preventDefault();
                         // self.elements.prompt.empty().append(
                         //     $("<h1>").html("Sign&nbsp;in&nbsp;with..."),
@@ -1175,14 +1175,14 @@ window.App = (function () {
                         // ).fadeIn(200);
                     });
                 },
-                wsinit: function () {
+                wsinit: () => {
                     if (ls.get("auth_proceed")) {
                         // we need to authenticate...
                         ls.remove("auth_proceed");
                         self.signin();
                     }
                 },
-                doSignup: function () {
+                doSignup: () => {
                     if (!self.pendingSignupToken) return;
 
                     $.post({
@@ -1192,25 +1192,25 @@ window.App = (function () {
                             token: self.pendingSignupToken,
                             username: self.elements.signup.find("input").val()
                         },
-                        success: function () {
+                        success: () => {
                             self.elements.signup.find("#error").text("");
                             self.elements.signup.find("input").val("");
                             self.elements.signup.fadeOut(200);
                             socket.reconnectSocket();
                             self.pendingSignupToken = null;
                         },
-                        error: function (data) {
+                        error: data => {
                             self.elements.signup.find("#error").text(data.responseJSON.message);
                         }
                     });
                 },
-                init: function () {
+                init: () => {
                     $(window).on('pxls:draw.finished', () => {
                         document.querySelector('.userinfo-name').textContent = self._userinfo === false ? 'Log In/Register' : self._userinfo.username || '-snip-';
                     });
                     self.elements.userMessage.hide();
                     self.elements.signup.hide();
-                    self.elements.signup.find("input").keydown(function (evt) {
+                    self.elements.signup.find("input").keydown(evt => {
                         evt.stopPropagation();
                         if (evt.key == "Enter" || evt.which === 13) {
                             self.doSignup();
@@ -1219,9 +1219,9 @@ window.App = (function () {
                     self.elements.signup.find("#signup-button").click(self.doSignup);
                     self.elements.users.hide();
                     // self.elements.userInfo.hide();
-                    self.elements.userInfo.find(".logout").click(function (evt) {
+                    self.elements.userInfo.find(".logout").click(evt => {
                         evt.preventDefault();
-                        $.get("/logout", function () {
+                        $.get("/logout", () => {
                             self.elements.userInfo.fadeOut(200);
                             self.elements.userMessage.fadeOut(200);
                             self.elements.loginOverlay.fadeIn(200);
@@ -1232,20 +1232,20 @@ window.App = (function () {
                             socket.reconnectSocket();
                         });
                     });
-                    $(window).bind("storage", function (evt) {
+                    $(window).bind("storage", evt => {
                         if (evt.originalEvent.key == "auth") {
                             ls.remove("auth");
                             self.signin();
                         }
                     });
-                    socket.on("users", function (data) {
-                        status.setValue(status.DefaultKeyMap['online-count'], data.count);
+                    socket.on("users", data => {
+                        status.update(online-count, data.count);
                     });
-                    socket.on("session_limit", function (data) {
+                    socket.on("session_limit", data => {
                         socket.close();
                         alert.show("Too many sessions open, try closing some tabs.");
                     });
-                    socket.on("userinfo", function (data) {
+                    socket.on("userinfo", data => {
                         let isBanned = false,
                             banelem = $("<div>").addClass("ban-alert-content");
                         self.loggedIn = true;
@@ -1274,15 +1274,15 @@ window.App = (function () {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
-                            $.getScript("admin/admin.js").done(function () {
-                                window.initAdmin({
-                                    socket: socket,
-                                    user: user,
-                                    place: place,
-                                    alert: alert,
-                                    lookup: lookup
-                                });
-                            });
+                            // $.getScript("admin/admin.js").done(() => {
+                            //     window.initAdmin({ //TODO panels.getBodyFor('modtools')
+                            //         socket: socket,
+                            //         user: user,
+                            //         place: place,
+                            //         alert: alert,
+                            //         lookup: lookup
+                            //     });
+                            // });
                         } else if (window.deInitAdmin) {
                             window.deInitAdmin();
                         }
@@ -1319,7 +1319,7 @@ window.App = (function () {
                 isLoggedIn: self.isLoggedIn
             };
         })(),
-        board = (function () {
+        board = (() => {
             let self = {
                 elements: {
                     board: $("#mainCanvas"),
@@ -1357,13 +1357,13 @@ window.App = (function () {
                     if (!isNaN(data.scale)) self.scale = parseFloat(data.scale);
                     self.centerOn(data.x, data.y);
                 },
-                centerOn: function (x, y) {
+                centerOn: (x, y) => {
                     if (x != null) self.pan.x = (self.width / 2 - x);
                     if (y != null) self.pan.y = (self.height / 2 - y);
                     self.update();
                 },
                 replayBuffer: () => {
-                    $.map(self.pixelBuffer, function (p) {
+                    $.map(self.pixelBuffer, p => {
                         self.setPixel(p.x, p.y, p.c, false);
                     });
                     self.refresh();
@@ -1390,9 +1390,9 @@ window.App = (function () {
                     self.replayBuffer();
                     $(window).trigger('pxls:draw.finished');
                 },
-                initInteraction: function () {
+                initInteraction: () => {
                     // first zooming and stuff
-                    let handleMove = function (evt) {
+                    let handleMove = evt => {
                         if (!self.allowDrag) return;
                         self.pan.x += evt.dx / self.scale;
                         self.pan.y += evt.dy / self.scale;
@@ -1404,13 +1404,13 @@ window.App = (function () {
                         inertia: true,
                         onmove: handleMove
                     }).gesturable({
-                        onmove: function (evt) {
+                        onmove: evt => {
                             self.scale *= (1 + evt.ds);
                             handleMove(evt);
                         }
                     });
 
-                    self.elements.container[0].addEventListener("wheel", function (evt) {
+                    self.elements.container[0].addEventListener("wheel", evt => {
                         if (!self.allowDrag) return;
                         const oldScale = self.scale;
                         if (evt.deltaY > 0) {
@@ -1436,7 +1436,7 @@ window.App = (function () {
                     self.elements.board_render.on("pointerdown mousedown", handleInputDown)
                         .on("pointermove mousemove", handleInputMove)
                         .on("pointerup mouseup touchend", handleInputUp)
-                        .contextmenu(function (evt) {
+                        .contextmenu(evt => {
                             evt.preventDefault();
                             place.switch(-1);
                         });
@@ -1517,7 +1517,7 @@ window.App = (function () {
                         }
                     }
                 },
-                init: function () {
+                init: () => {
                     $(window).on("pxls:queryUpdated", (evt, propName, oldValue, newValue) => {
                         switch (propName.toLowerCase()) {
                             case "x":
@@ -1568,15 +1568,15 @@ window.App = (function () {
                         ls.set("snapshotImageFormat", event.target.value);
                     });
                 },
-                start: function () {
-                    $.get("/info", function (data) {
+                start: () => {
+                    $.get("/info", data => {
                         heatmap.webinit(data);
                         virginmap.webinit(data);
                         user.webinit(data);
                         self.width = data.width;
                         self.height = data.height;
                         place.setPalette(data.palette);
-//                         uiHelper.setMax(data.maxStacked);
+                        place.setMaxStacked(data.maxStacked);
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
 
@@ -1595,13 +1595,13 @@ window.App = (function () {
                         binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
 
                         if (self.use_js_render) {
-                            $(window).on('resize', function () {
+                            $(window).on('resize', () => {
                                 self.update();
                             }).trigger('resize');
                         } else {
-                            $(window).on('resize', function () {
+                            $(window).on('resize', () => {
                                 place.update();
-                                grid.update();
+                                // grid.update(); //TODO
                             });
                         }
                         const url = query.get("template");
@@ -1620,7 +1620,7 @@ window.App = (function () {
                             spin = 360 / (spin * 1000);
                             let degree = 0,
                                 start = null;
-                            const spiiiiiin = function (timestamp) {
+                            const spiiiiiin = timestamp => {
                                 if (!start) {
                                     start = timestamp;
                                 }
@@ -1637,11 +1637,11 @@ window.App = (function () {
                         if (color != null) {
                             place.switch(parseInt(color));
                         }
-                    }).fail(function () {
+                    }).fail(() => {
                         socket.reconnect();
                     });
                 },
-                update: function (optional) {
+                update: optional => {
                     self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
                     self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
                     query.set({
@@ -1649,8 +1649,8 @@ window.App = (function () {
                         y: Math.round((self.height / 2) - self.pan.y),
                         scale: Math.round(self.scale * 100) / 100
                     }, true);
-                    status.setValue(status.DefaultKeyMap['pan'], `(${Math.round((self.width / 2) - self.pan.x)}, ${Math.round((self.height / 2) - self.pan.y)})`);
-                    status.setValue(status.DefaultKeyMap['scale'], Math.round(self.scale * 100) / 100);
+                    status.update('pan-pos', `(${Math.round((self.width / 2) - self.pan.x)}, ${Math.round((self.height / 2) - self.pan.y)})`);
+                    status.update('scale', Math.round(self.scale * 100) / 100);
                     if (self.use_js_render) {
                         const ctx2 = self.elements.board_render[0].getContext("2d");
                         let pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
@@ -1735,16 +1735,14 @@ window.App = (function () {
 //                     grid.update();
                     return true;
                 },
-                getScale: function () {
-                    return Math.abs(self.scale);
-                },
-                setScale: function (scale) {
+                getScale: () => Math.abs(self.scale),
+                setScale: scale => {
                     if (ls.get("increased_zoom") !== true && scale > 50) scale = 50;
                     else if (scale <= 0) scale = 0.5; //enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
                     self.scale = scale;
                     self.update();
                 },
-                nudgeScale: function (adj) {
+                nudgeScale: adj => {
                     const oldScale = Math.abs(self.scale),
                         sign = Math.sign(self.scale),
                         maxUnlocked = ls.get("increased_zoom") === true;
@@ -1773,13 +1771,13 @@ window.App = (function () {
                     self.scale *= sign;
                     self.update();
                 },
-                getPixel: function (x, y) {
+                getPixel: (x, y) => {
                     x >>= x;
                     y >>= y;
                     const colorInt = self.intView[y * self.width + x];
                     return self.rgbPalette.indexOf(colorInt);
                 },
-                setPixel: function (x, y, c, refresh) {
+                setPixel: (x, y, c, refresh) => {
                     if (!self.loaded) {
                         self.pixelBuffer.push({
                             x: x,
@@ -1800,12 +1798,12 @@ window.App = (function () {
                         self.ctx.putImageData(self.id, 0, 0);
                     }
                 },
-                refresh: function () {
+                refresh: () => {
                     if (self.loaded) {
                         self.ctx.putImageData(self.id, 0, 0);
                     }
                 },
-                fromScreen: function (screenX, screenY) {
+                fromScreen: (screenX, screenY) => {
                     let adjust_x = 0,
                         adjust_y = 0;
                     if (self.scale < 0) {
@@ -1830,7 +1828,7 @@ window.App = (function () {
                         y: ((screenY - boardBox.top) / self.scale) + adjust_y
                     };
                 },
-                toScreen: function (boardX, boardY) {
+                toScreen: (boardX, boardY) => {
                     if (self.scale < 0) {
                         boardX -= self.width - 1;
                         boardY -= self.height - 1;
@@ -1853,7 +1851,7 @@ window.App = (function () {
                         y: boardY * self.scale + boardBox.top
                     };
                 },
-                save: function () {
+                save: () => {
                     const a = document.createElement("a");
                     const format = $("#snapshotImageFormat").val();
 
@@ -1866,9 +1864,7 @@ window.App = (function () {
                         a.remove();
                     }
                 },
-                getRenderBoard: function () {
-                    return self.elements.board_render;
-                },
+                getRenderBoard: () => self.elements.board_render,
                 get board() {
                     return self.elements.board;
                 }
@@ -1892,7 +1888,7 @@ window.App = (function () {
                 allowDrag: self.allowDrag,
             };
         })(),
-        polyfill = (function() {
+        polyfill = (() => {
             let self = {
                 Element: {
                     Closest: () => {
@@ -1932,12 +1928,12 @@ window.App = (function () {
                 }
             }
         })(),
-        ui = (function() {
+        ui = (() => {
             let self = {
                 elements: {
                     username: $(".userinfo-name")
                 },
-                userinfo: function(info) {
+                userinfo: info => {
                     self.elements.username.removeClass("not-authed").text(info.username || "");
                 },
                 init: () => {
@@ -1966,7 +1962,7 @@ window.App = (function () {
                 init: self.init
             };
         })(),
-        panels = (function() {
+        panels = (() => {
             let self = {
                 init: () => {
                     Array.from(document.querySelectorAll(".panel-trigger")).forEach(panelTrigger => {
@@ -2024,12 +2020,12 @@ window.App = (function () {
             };
         })(),
         // this takes care of browser notifications
-        notification = (function () {
+        notification = (() => {
             let self = {
-                init: function () {
+                init: () => {
                     Notification.requestPermission().catch(e => {console.error(e)});
                 },
-                show: function (s) {
+                show: s => {
                     try {
                         let n = new Notification("pxls.space", {
                             body: s,
@@ -2087,65 +2083,58 @@ window.App = (function () {
                     status: $('#status')
                 },
                 _elemCache: {},
-                DefaultKeyMap: {
-                    'cursor-pos': 'Cursor Position:',
-                    'stack-count': 'Pixels Available:',
-                    'scale': 'Zoom:',
-                    'online-count': 'Online:',
-                    'pan': 'Pan Position:'
-                },
                 init: () => {
                     self.elements.status[0].dataset['init'] = '1';
-                    self.register(self.DefaultKeyMap['cursor-pos'], '(0, 0)');
-                    self.register(self.DefaultKeyMap['pan'], '(0, 0)');
-                    self.register(self.DefaultKeyMap['stack-count'], '0/0');
-                    self.register(self.DefaultKeyMap['scale'], '1x');
-                    self.register(self.DefaultKeyMap['online-count'], '0');
+                    [
+                        ['cursor-pos', 'Cursor Position:', '(0, 0)'],
+                        ['pan-pos', 'Pan Position:', '(0, 0)'],
+                        ['stack-count', 'Pixels Available:', '0/0'],
+                        ['scale', 'Zoom:', '0'],
+                        ['online-count', 'Online:', '0']
+                    ].forEach(x => {
+                        console.log(x);
+                        self.register(x[0], x[1], x[2]);
+                    })
                 },
-                register: (key, initialValue, options = {}) => {
-                    self.setValue(key, initialValue, options);
-                },
-                valueElemFor: (key) => {
-                    let cached = self._elemCache[key];
-                    if (!cached) {
-                        cached = crel('span', {'data-for': key});
-                        self._elemCache[key] = cached;
-                        crel(self.elements.status[0], crel('p', {'data-key': key, 'class': 'status-line'}, key, self._elemCache[key]));
+                register: (key, descLabel, initialValue) => {
+                    let line = self.elements.status[0].querySelector(`[data-line="${key}"]`);
+                    if (!line) {
+                        line = crel('p', {'data-line': key, class: 'status-line'}, descLabel, crel('span', {'data-key': key, class: 'status-value'}, initialValue));
+                        self.elements.status.append(line);
                     }
-                    return cached;
                 },
-                hide: key => {
-                    self.elements.status[0].querySelector(`[data-key="${key}"]`).classList.toggle('hide', true);
+                lineFor: key => {
+                    return self.elements.status[0].querySelector(`[data-line="${key}"]`);
                 },
-                show: key => {
-                    self.elements.status[0].querySelector(`[data-key="${key}"]`).classList.toggle('hide', false);
+                setVisible: (key, vis) => {
+                    let lineFor = self.lineFor(key);
+                    if (!lineFor) return;
+                    lineFor.classList.toggle('hide', !vis);
                 },
-                setValue: (key, value, options) => {
+                show: key => self.setVisible(key, true),
+                hide: key => self.setVisible(key, false),
+                valueElemFor: key => {
+                    let lineFor = self.lineFor(key);
+                    if (!lineFor) return crel('span');
+                    return lineFor.querySelector('[data-key]') || crel('span');
+                },
+                update: (key, value, options) => {
                     options = Object.assign({classes: '', styles: ''}, options);
                     let elem = self.valueElemFor(key);
                     elem.className = options.classes;
                     elem.setAttribute('style', options.styles);
                     elem.textContent = value;
-                },
-                addCustomLine: (lineElem) => {
-                    if (typeof lineElem === 'string') lineElem = crel('p', lineElem);
-                },
-                update: () => {
-                    //
                 }
             };
             return {
                 init: self.init,
                 update: self.update,
                 valueElemFor: self.valueElemFor,
-                setValue: self.setValue,
+                lineFor: self.lineFor,
                 register: self.register,
                 show: self.show,
                 hide: self.hide,
-                addCustomLine: self.addCustomLine,
-                get DefaultKeyMap() {
-                    return self.DefaultKeyMap;
-                }
+                setVisible: self.setVisible
             };
         })();
     // init progress
@@ -2171,13 +2160,13 @@ window.App = (function () {
     polyfill.fill();
     panels.init();
     ui.init();
+    status.init();
     user.init();
     notification.init();
     heatmap.init();
     virginmap.init();
     board.init();
     socket.init();
-    status.init();
     board.init();
     place.init();
 

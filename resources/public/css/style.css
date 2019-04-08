@@ -154,9 +154,9 @@ a:hover {
 }
 
 .pixelate {
-    /* and actually pixelate them */
     image-rendering: optimizeSpeed; /* Legal fallback */
     -ms-interpolation-mode: nearest-neighbor;
+    /*noinspection CssInvalidPropertyValue*/
     image-rendering: -webkit-optimize-contrast;
     image-rendering: -webkit-crisp-edges;
     image-rendering: -moz-crisp-edges;
@@ -266,18 +266,16 @@ a:hover {
     z-index: 90;
     padding: 15px 0 7px;
     margin: 0 auto;
-
     overflow-x: auto;
     text-align: center;
     white-space: nowrap;
-
     background-image: linear-gradient(to bottom, #d2d2d2, #9f9f9f);
     border-bottom: none;
     border-top: 1px solid #000;
-
     position: absolute;
     bottom: 0;
     width: 100%;
+    display: block;
 }
 
 .palette-color {
