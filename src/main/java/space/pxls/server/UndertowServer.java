@@ -41,7 +41,7 @@ public class UndertowServer {
         socketHandler = new PacketHandler(this);
     }
 
-    public void start() {
+    public void start() throws Exception {
         PathHandler mainHandler = Handlers.path()
                 .addExactPath("/ws", Handlers.websocket(this::webSocketHandler))
                 .addPrefixPath("/ws", Handlers.websocket(this::webSocketHandler))
@@ -66,13 +66,11 @@ public class UndertowServer {
                 .addPrefixPath("/admin/chatban", new RoleGate(Role.TRIALMOD, webHandler::chatban))
                 .addPrefixPath("/admin/delete", new RoleGate(Role.TRIALMOD, webHandler::deleteChatMessage))
                 .addPrefixPath("/admin/chatPurge", new RoleGate(Role.TRIALMOD, webHandler::chatPurge))
-                .addPrefixPath("/admin", new RoleGate(Role.TRIALMOD, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
-                        .setCacheTime(10)))
+                .addPrefixPath("/admin", new RoleGate(Role.TRIALMOD, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10)))
                 .addPrefixPath("/whoami", webHandler::whoami)
-                .addExactPath("/", webHandler::index)
-                .addExactPath("/index.html", webHandler::index)
-                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
-                        .setCacheTime(10));
+//                .addExactPath("/", webHandler::index)
+//                .addExactPath("/index.html", webHandler::index)
+                .addPrefixPath("/", Handlers.resource(PxlsResourceManager.getInstance()));
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
         server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
