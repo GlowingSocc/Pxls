@@ -19,3 +19,7 @@ TODO
 /.vs/ProjectSettings.json
 /.vs/slnx.sqlite
 /.vs/VSWorkspaceState.json
+node_modules/
+yarn-error*.log
+webdist/
+node/

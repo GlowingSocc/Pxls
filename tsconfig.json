@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "module": "es6",
+    "noImplicitAny": true,
+    "preserveConstEnums": true,
+    "sourceMap": true
+  },
+  "include": [
+    "webroot/ts/**/*.ts"
+  ]
+}
