@@ -2501,14 +2501,14 @@ window.App = (function () {
                 themes: [
                     {
                         name: "Dark",
-                        location: '/themes/dark.css'
+                        location: '/css/themes/dark.css'
                     }
                 ],
                 init: function () {
                     self._initThemes();
                     self._initStack();
                     self._initAudio();
-                    var useMono = ls.get("monospace_lookup")
+                    var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
                         ls.set("monospace_lookup", true);
                         useMono = true;
@@ -4145,7 +4145,7 @@ window.App = (function () {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
-                            $.getScript("admin/admin.js").done(function () {
+                            $.getScript("js/admin.js").done(function () {
                                 window.initAdmin({
                                     socket: socket,
                                     user: user,

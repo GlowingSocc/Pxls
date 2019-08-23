@@ -30,6 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class WebHandler {
+
     private String fileToString (File f) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(f));
@@ -69,7 +70,7 @@ public class WebHandler {
             return;
         }
         ClassPathResourceManager cprm = new ClassPathResourceManager(App.class.getClassLoader(), "public/");
-        String s = resourceToString("/public/index.html");
+        String s = resourceToString("/public/views/index.html");
         String[] replacements = {"title", "head", "info"};
         for (String p : replacements) {
             String r = App.getConfig().getString("html." + p);

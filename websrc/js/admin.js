@@ -143,7 +143,7 @@
         style = (function() {
             var self = {
                 elements: {
-                    sheet: $("<link>", {rel: "stylesheet", href: "/admin/admin.css"})
+                    sheet: $("<link>", {rel: "stylesheet", href: "/css/admin.css"})
                 },
                 init: function () {
                     self.elements.sheet.appendTo(document.head);
