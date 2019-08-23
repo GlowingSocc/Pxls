@@ -12,12 +12,6 @@ module.exports = function(grunt) {
                     },
                     {
                         expand: true,
-                        cwd: 'websrc/js/',
-                        src: './**/*',
-                        dest: 'webdist/public/js/'
-                    },
-                    {
-                        expand: true,
                         cwd: 'websrc/views/',
                         src: './**/*',
                         dest: 'webdist/public/views/'
@@ -44,6 +38,29 @@ module.exports = function(grunt) {
                 ]
             }
         },
+        babel: {
+            options: {
+                sourceMap: true,
+                presets: [
+                    '@babel/preset-env',
+                    ['minify', {
+                        builtIns: false,
+                        evaluate: false,
+                        mangle: false
+                    }]
+                ]
+            },
+            dist: {
+                files: [
+                    {
+                        expand: true,
+                        cwd: 'websrc/js/',
+                        src: './**/*.js',
+                        dest: 'webdist/public/js/'
+                    }
+                ]
+            }
+        },
         clean: ['webdist/'],
         watch: {
             websrc: {
@@ -57,7 +74,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-postcss');
+    grunt.loadNpmTasks('grunt-babel');
 
-    grunt.registerTask('build', ['copy', 'postcss']);
+    grunt.registerTask('build', ['copy', 'babel', 'postcss']);
     grunt.registerTask('default', ['clean', 'build']);
 };
