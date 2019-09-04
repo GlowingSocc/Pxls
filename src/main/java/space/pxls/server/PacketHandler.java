@@ -89,7 +89,7 @@ public class PacketHandler {
             user.tickStack(false); // pop the whole pixel stack
             sendAvailablePixels(channel, user, "connect");
 
-            App.getLogger().debug("Submitting a new user dupe IP task for user " + user.getId());
+            App.getLogger().debug(String.format("Submitting a new user dupe IP task for user %d%n", user.getId()));
             userDupeIPExecutor.submit(new UserDupeIPTask(channel, user));
         }
         numAllCons++;
