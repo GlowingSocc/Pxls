@@ -35,8 +35,6 @@ public class UserDupeIPTask implements Runnable {
                 }
                 App.getDatabase().addServerReport(toReport.toString(), user.getId());
                 App.getDatabase().flagLastIPAlert(user.getId());
-            } else {
-                System.out.printf("Check failed. Uids null: %s, size: %d%n", uids == null, uids == null ? -1 : uids.size());
             }
         }
     }
