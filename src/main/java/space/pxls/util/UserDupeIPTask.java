@@ -11,17 +11,19 @@ import java.util.List;
 public class UserDupeIPTask implements Runnable {
     private final User user;
     private final WebSocketChannel channel;
+    private final String ip;
 
-    public UserDupeIPTask(WebSocketChannel channel, User user) {
+    public UserDupeIPTask(WebSocketChannel channel, User user, String ip) {
         this.user = user;
         this.channel = channel;
+        this.ip = ip;
     }
 
     @Override
     public void run() {
         if (!App.getDatabase().hasUserFlaggedLastIPAlert(user.getId())) {
             System.out.printf("User %d has not been flagged, running checks...%n", user.getId());
-            List<Integer> uids = App.getDatabase().getDupedUsers(channel.getSourceAddress().getHostName(), user.getId());
+            List<Integer> uids = App.getDatabase().getDupedUsers(ip, user.getId());
             if (uids != null && uids.size() > 0) {
                 System.out.printf("User %d has %d accounts, iterating and sending report%n", user.getId(), uids.size());
                 StringBuilder toReport = new StringBuilder(String.format("User has %d IP matches in the database. Matched accounts:", uids.size()));
