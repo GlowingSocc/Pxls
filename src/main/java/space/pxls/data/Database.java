@@ -397,6 +397,7 @@ public class Database implements Closeable {
     }
 
     public List<Integer> getDupedUsers(String ip, int uid) {
+        System.out.printf("Grabbing dupes for %s / %d%n", ip, uid);
         return getHandle().getDupedUsers(ip, uid);
     }
 
