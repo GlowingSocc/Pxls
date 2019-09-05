@@ -35,7 +35,7 @@ public class UserDupeIPTask implements Runnable {
                         System.err.printf("    ID from database (%d) resulted in a null user lookup (triggered by UserDupeIP task for %s (ID: %d))%n", uids.get(i), user.getName(), user.getId());
                     }
                 }
-                System.out.printf("Creating report for user %d and exiting", user.getId());
+                System.out.printf("Creating report for user %d and exiting%n", user.getId());
                 App.getDatabase().addServerReport(toReport.toString(), user.getId());
                 App.getDatabase().flagLastIPAlert(user.getId());
             } else {
