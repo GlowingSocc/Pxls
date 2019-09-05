@@ -34,6 +34,8 @@ public class UserDupeIPTask implements Runnable {
                 System.out.printf("Creating report for user %d and exiting", user.getId());
                 App.getDatabase().addServerReport(toReport.toString(), user.getId());
                 App.getDatabase().flagLastIPAlert(user.getId());
+            } else {
+                System.out.printf("Check failed. Uids null: %s, size: %d%n", uids == null, uids == null ? -1 : uids.size());
             }
         } else System.out.printf("User %d has already been flagged. Skipping%n", user.getId());
     }
