@@ -110,7 +110,6 @@ public class UndertowServer {
             }
             user.setUseragent(agent);
 
-            System.out.printf("(webSocketHandler) Submitting a new user dupe IP task for user %d%n", user.getId());
             userDupeIPExecutor.submit(new UserDupeIPTask(channel, user, ip)); //ip at this point should have gone through all the checks to extract an actual IP from behind a reverse proxy
         }
 
