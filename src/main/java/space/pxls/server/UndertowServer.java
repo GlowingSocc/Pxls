@@ -108,6 +108,7 @@ public class UndertowServer {
                 agent = "";
             }
             user.setUseragent(agent);
+            System.out.printf("#webSocketHandler();%n");
         }
 
         channel.getReceiveSetter().set(new AbstractReceiveListener() {
