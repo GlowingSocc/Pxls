@@ -1755,9 +1755,23 @@ window.App = (function () {
                         self._update({ opacity: parseFloat(this.value) });
                     });
                     $(window).keydown(function (evt) {
-                        if (evt.ctrlKey && self.options.use) {
-                            evt.preventDefault();
-                            self.elements.template.css("pointer-events", "initial");
+                        console.log(evt);
+                        if (self.options.use) {
+                            let specifier = evt.originalEvent.code || evt.originalEvent.keyCode || evt.originalEvent.which || evt.originalEvent.key;
+                            switch(specifier) {
+                                case "ControlLeft":
+                                case "ControlRight":
+                                case "Control":
+                                case 17:
+                                case "AltLeft":
+                                case "AltRight":
+                                case "Alt":
+                                case 18:
+                                    console.log('Caught specifier %o for template move', specifier);
+                                    evt.preventDefault();
+                                    self.elements.template.css("pointer-events", "initial");
+                                    break;
+                            }
                         }
                         let newOpacity = 0;
                         switch (evt.code || evt.keyCode || evt.which || evt.key) {
