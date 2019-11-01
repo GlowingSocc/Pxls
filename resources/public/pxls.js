@@ -863,14 +863,18 @@ window.App = (function () {
                         }
                         downDelta = 0;
                         if (event.button != null) {
+                            console.log('got a valid button: %o', event.button);
                             // Is the button pressed the middle mouse button?
                             if (ls.get("enableMiddleMouseSelect") === true && event.button === 1 && dx < 15 && dy < 15) {
                                 // If so, switch to the color at the location.
                                 var { x, y } = self.fromScreen(event.clientX, event.clientY);
+                                console.log('mmb check passed, attempting to switch to color based on board coords (%o, %o)', x, y);
                                 place.switch(self.getPixel(x, y));
                                 return;
+                            } else {
+                                console.log('mmb check failed. localStorage: %o, button: %o, dx: %o, dy: %o', ls.get('enableMiddleMouseSelect'), event.button, dx, dy);
                             }
-                        }
+                        } else console.log('event.button was null. event: %o', event);
                     }
                 },
                 init: function () {
