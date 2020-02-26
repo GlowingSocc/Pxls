@@ -61,8 +61,16 @@ public class Database {
                     "undone BOOL NOT NULL DEFAULT false," +
                     "undo_action BOOL NOT NULL DEFAULT false," +
                     "most_recent BOOL NOT NULL DEFAULT true);" +
-                    "CREATE INDEX IF NOT EXISTS pos ON pixels (x,y);" +
-                    "CREATE INDEX IF NOT EXISTS most_recent ON pixels (most_recent)")
+                    "CREATE INDEX IF NOT EXISTS _pos ON pixels (x,y);" +
+                    "CREATE INDEX IF NOT EXISTS _most_recent ON pixels (most_recent);" +
+                    "CREATE INDEX IF NOT EXISTS _pos_who_latest ON pixels (x, y, \"who\", most_recent);" +
+                    "CREATE INDEX IF NOT EXISTS _pos_latest ON pixels (x, y, most_recent);" +
+                    "CREATE INDEX IF NOT EXISTS _who_latest ON pixels (most_recent, who);" +
+                    "CREATE INDEX IF NOT EXISTS _who_latest_time ON pixels (most_recent, who, time);" +
+                    "CREATE INDEX IF NOT EXISTS _who_rollbacks ON pixels (rollback_action, who);" +
+                    "CREATE INDEX IF NOT EXISTS _time ON pixels (time);" +
+                    "CREATE INDEX IF NOT EXISTS _meta_timeless ON pixels (rollback_action, mod_action, undo_action, undone);" +
+                    "CREATE INDEX IF NOT EXISTS _metas ON pixels (rollback_action, mod_action, undo_action, undone, time);")
                 .execute();
             // users
             handle.createUpdate("CREATE TABLE IF NOT EXISTS users (" +
@@ -86,7 +94,12 @@ public class Database {
                     "stacked INT DEFAULT 0," +
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
-                    "chat_name_color INT NOT NULL)")
+                    "chat_name_color INT NOT NULL);" +
+                    "CREATE INDEX IF NOT EXISTS _uname ON users (username);" +
+                    "CREATE INDEX IF NOT EXISTS _login ON users (login);" +
+                    "CREATE INDEX IF NOT EXISTS _last_ip_id ON users (last_ip, id);" +
+                    "CREATE INDEX IF NOT EXISTS _signup_ip_id ON users (signup_ip, id);" +
+                    "CREATE INDEX IF NOT EXISTS _signup ON users (signup_time);")
                     .execute();
             // sessions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
@@ -94,14 +107,19 @@ public class Database {
                     "who INT NOT NULL,"+
                     "token VARCHAR(60) NOT NULL,"+
                     "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP);" +
-                    "CREATE INDEX IF NOT EXISTS token ON sessions (token)")
+                    "CREATE INDEX IF NOT EXISTS token ON sessions (token);" +
+                    "CREATE INDEX IF NOT EXISTS _who ON sessions (who);" +
+                    "CREATE INDEX IF NOT EXISTS _time ON sessions (time);")
                     .execute();
             // lookups
             handle.createUpdate("CREATE TABLE IF NOT EXISTS lookups (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "who INT," +
                     "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                    "ip INET)")
+                    "ip INET);" +
+                    "CREATE INDEX IF NOT EXISTS _who ON lookups (who);" +
+                    "CREATE INDEX IF NOT EXISTS _ip ON lookups (ip);" +
+                    "CREATE INDEX IF NOT EXISTS _time ON lookups (time);")
                     .execute();
             // admin_log
             handle.createUpdate("CREATE TABLE IF NOT EXISTS admin_log (" +
@@ -110,7 +128,10 @@ public class Database {
                     "level INT," +
                     "message TEXT," +
                     "time INT," +
-                    "userid INT)")
+                    "userid INT);" +
+                    "CREATE INDEX IF NOT EXISTS _channel ON admin_log (channel);" +
+                    "CREATE INDEX IF NOT EXISTS _level ON admin_log (level);" +
+                    "CREATE INDEX IF NOT EXISTS _userid ON admin_log (userid);")
                     .execute();
             // reports
             handle.createUpdate("CREATE TABLE IF NOT EXISTS reports (" +
@@ -123,7 +144,12 @@ public class Database {
                     "reported INT," +
                     "claimed_by INT NOT NULL DEFAULT 0," +
                     "closed BOOL NOT NULL DEFAULT false," +
-                    "time INT DEFAULT NULL)")
+                    "time INT DEFAULT NULL);" +
+                    "CREATE INDEX IF NOT EXISTS _closed_reported ON reports (closed, reported);" +
+                    "CREATE INDEX IF NOT EXISTS _reported ON reports (reported);" +
+                    "CREATE INDEX IF NOT EXISTS _claimed_by ON reports (claimed_by);" +
+                    "CREATE INDEX IF NOT EXISTS _who ON reports (who);" +
+                    "CREATE INDEX IF NOT EXISTS _loc ON reports (x, y);")
                     .execute();
             // stats
             handle.createUpdate("CREATE TABLE IF NOT EXISTS stats (" +
@@ -139,7 +165,9 @@ public class Database {
                     "target_id INT NOT NULL," +
                     "reply_to INT DEFAULT NULL," +
                     "message TEXT NOT NULL," +
-                    "timestamp INT NOT NULL)")
+                    "timestamp INT NOT NULL);" +
+                    "CREATE INDEX IF NOT EXISTS _target_reply ON admin_notes (target_id, reply_to);" +
+                    "CREATE INDEX IF NOT EXISTS _reply ON admin_notes (reply_to);")
                     .execute();
             // banlogs
             handle.createUpdate("CREATE TABLE IF NOT EXISTS banlogs (" +
@@ -149,7 +177,10 @@ public class Database {
                     "banned INT NOT NULL," +
                     "ban_expiry INT DEFAULT 0," +
                     "action VARCHAR(256) NOT NULL," +
-                    "ban_reason VARCHAR(512) NOT NULL)")
+                    "ban_reason VARCHAR(512) NOT NULL);" +
+                    "CREATE INDEX IF NOT EXISTS _banned ON banlogs (banned);" +
+                    "CREATE INDEX IF NOT EXISTS _banner ON banlogs (banner);" +
+                    "CREATE INDEX IF NOT EXISTS _action ON banlogs (action);")
                     .execute();
             // chat_messages
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_messages (" +
@@ -159,7 +190,11 @@ public class Database {
                     "content VARCHAR(2048) NOT NULL," +
                     "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
                     "purged BOOL NOT NULL DEFAULT false," +
-                    "purged_by INT)")
+                    "purged_by INT);" +
+                    "CREATE INDEX IF NOT EXISTS _author ON chat_messages (author);" +
+                    "CREATE INDEX IF NOT EXISTS _author_purged ON chat_messages (author, purged);" +
+                    "CREATE INDEX IF NOT EXISTS _purged_by ON chat_messages (purged_by);" +
+                    "CREATE INDEX IF NOT EXISTS _sent ON chat_messages (sent);")
                     .execute();
             // chat_reports
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_reports (" +
@@ -170,7 +205,11 @@ public class Database {
                     "target INT NOT NULL," +
                     "initiator INT NOT NULL," +
                     "claimed_by INT NOT NULL default 0," +
-                    "closed BOOL NOT NULL default false)")
+                    "closed BOOL NOT NULL default false);" +
+                    "CREATE INDEX IF NOT EXISTS _closed ON chat_reports (closed);" +
+                    "CREATE INDEX IF NOT EXISTS _claimed_by ON chat_reports (claimed_by);" +
+                    "CREATE INDEX IF NOT EXISTS _target ON chat_reports (target);" +
+                    "CREATE INDEX IF NOT EXISTS _closed_claimed_target ON chat_reports (closed, claimed_by, target);")
                     .execute();
             // ip_log
             handle.createUpdate("CREATE TABLE IF NOT EXISTS ip_log (" +
@@ -178,7 +217,10 @@ public class Database {
                     "\"user\" INT NOT NULL," +
                     "ip INET NOT NULL," +
                     "last_used TIMESTAMP NOT NULL DEFAULT NOW());" +
-                    "CREATE UNIQUE INDEX IF NOT EXISTS \"ip_log_user_ip_pair\" ON \"ip_log\" (\"user\", \"ip\")")
+                    "CREATE UNIQUE INDEX IF NOT EXISTS \"ip_log_user_ip_pair\" ON \"ip_log\" (\"user\", \"ip\");" +
+                    "CREATE INDEX IF NOT EXISTS _user ON ip_log (\"user\");" +
+                    "CREATE INDEX IF NOT EXISTS _ip ON ip_log (ip);" +
+                    "CREATE INDEX IF NOT EXISTS _last_used ON ip_log (last_used);")
                     .execute();
             // notifications
             handle.createUpdate("CREATE TABLE IF NOT EXISTS notifications (" +
@@ -187,7 +229,10 @@ public class Database {
                     "expiry INT DEFAULT NULL," +
                     "title TEXT NOT NULL," +
                     "content TEXT NOT NULL," +
-                    "who INT NOT NULL)")
+                    "who INT NOT NULL);" +
+                    "CREATE INDEX IF NOT EXISTS _time ON notifications (time);" +
+                    "CREATE INDEX IF NOT EXISTS _expiry ON notifications (expiry);" +
+                    "CREATE INDEX IF NOT EXISTS _who ON notifications (who);")
                     .execute();
             // chatbans
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chatbans (" +
@@ -198,7 +243,15 @@ public class Database {
                     "type VARCHAR(256) NOT NULL," +
                     "expiry INT," +
                     "reason TEXT NOT NULL," +
-                    "purged BOOL NOT NULL);")
+                    "purged BOOL NOT NULL);" +
+                    "CREATE INDEX IF NOT EXISTS _target ON chatbans (target);" +
+                    "CREATE INDEX IF NOT EXISTS _initiator ON chatbans (initiator);" +
+                    "CREATE INDEX IF NOT EXISTS _initiator_target ON chatbans (initiator, target);" +
+                    "CREATE INDEX IF NOT EXISTS _when ON chatbans (\"when\");" +
+                    "CREATE INDEX IF NOT EXISTS _type ON chatbans (type);" +
+                    "CREATE INDEX IF NOT EXISTS _initiator_type ON chatbans (initiator, type);" +
+                    "CREATE INDEX IF NOT EXISTS _target_type ON chatbans (target, type);" +
+                    "CREATE INDEX IF NOT EXISTS _expiry ON chatbans (expiry);")
                     .execute();
         });
     }
